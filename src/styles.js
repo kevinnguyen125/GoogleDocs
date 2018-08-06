@@ -19,6 +19,7 @@ const styles = {
 
   horizFlex0: {
     flex: 0,
+    padding: '0.2em',
   },
 
 };
