@@ -17,6 +17,10 @@ const styles = {
     border: 'grey solid 2px',
   },
 
+  horizFlex0: {
+    flex: 0,
+  },
+
 };
 
 export default styles;
