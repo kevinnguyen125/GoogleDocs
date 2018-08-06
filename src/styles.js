@@ -11,11 +11,11 @@ const styles = {
     height: 400,
     overflow: 'auto',
     border: 'blue solid 4px',
-  }
+  },
 
   iconButton: {
     border: 'grey solid 2px',
-  }
+  },
 
 };
 
