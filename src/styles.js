@@ -13,6 +13,10 @@ const styles = {
     border: 'blue solid 4px',
   }
 
+  iconButton: {
+    border: 'grey solid 2px',
+  }
+
 };
 
 export default styles;
