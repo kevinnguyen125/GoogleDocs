@@ -1,11 +1,16 @@
 // Server
 import http from 'http';
 import express from 'express';
+import logger from 'morgan';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
+import methodOverride from 'method-override';
 
 // Passport
 import passport from 'passport';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
+import { Strategy as LocalStrategy } from 'passport-local';
 import { User } from './models/models.js';
 
 import auth from './routes/auth';
@@ -13,6 +18,13 @@ import routes from './routes/routes.js';
 
 const app = express();
 const server = http.Server(app);
+
+// Middleware
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(methodOverride());
 
 // Hash Function
 const hash = crypto.createHash('sha256');
@@ -22,7 +34,6 @@ const hashPassword = (password) => {
 };
 
 // Passport Methods
-const LocalStrategy = require('passport-local').Strategy;
 
 passport.use(new LocalStrategy((username, password, done) => {
   User.findOne({ username: username }, (err, user) => {

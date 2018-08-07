@@ -18,8 +18,8 @@ export default (passport) => {
     && userData.passwordRepeat && userData.password === userData.passwordRepeat);
 
   // sha256 Hashing For Passwords
-  const hash = crypto.createHash('sha256');
   const hashPassword = (password) => {
+    const hash = crypto.createHash('sha256');
     hash.update(password);
     return hash.digest('hex');
   };
