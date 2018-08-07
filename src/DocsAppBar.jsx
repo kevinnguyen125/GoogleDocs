@@ -12,7 +12,12 @@ export default class DocsAppBar extends React.Component {
           <IconButton color="inherit">
             <Menu />
           </IconButton>
-          <Button variant="outlined" color="primary" className="button" >
+          <Button
+            variant="outlined"
+            color="primary"
+            className="button"
+            onClick={() => this.handleLogin()}
+          >
             Login
           </Button>
           <Button variant="outlined" color="secondary" className="button">
@@ -21,7 +26,7 @@ export default class DocsAppBar extends React.Component {
           <Button variant="outlined" disabled className="button">
             Logout
           </Button>
-          <TextField id="EnterDocId" label="DocID" margin="normal" id="DocId">
+          <TextField label="DocID" margin="normal" id="DocId">
             Logout
           </TextField>
         </Toolbar>
