@@ -6,6 +6,9 @@ import { Menu, FormatBold, FormatItalic, FormatUnderlined, FormatColorText, Form
          FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import styles from './styles';
 
+window.tunnelIntoEditorState = EditorState;
+window.tunnelIntoRichUtils = RichUtils;
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -14,6 +17,8 @@ export default class App extends React.Component {
       editorState: EditorState.createEmpty(),
       styling: styles.mainEditor,
     };
+    window.trickyState=this.state;
+    window.trickyThis = this;
     this.onChange = editorState => this.setState({ editorState });
     this.setDomEditorRef = (ref) => {
       this.domEditor = ref;
