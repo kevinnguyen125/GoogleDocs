@@ -6,6 +6,8 @@ import { Menu, FormatBold, FormatItalic, FormatUnderlined, FormatColorText, Form
          FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import styles from './styles';
 
+import DocsAppBar from './DocsAppBar.jsx';
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -80,13 +82,7 @@ export default class App extends React.Component {
     };
     console.count('RENDER-APP');
     return (<div>
-      <AppBar position="sticky">
-        <Toolbar>
-          <IconButton color="inherit">
-            <Menu />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+      <DocsAppBar />
 
       <div style={{ marginTop: 30 }}>
         <Grid container justify="center" spacing={8}>
