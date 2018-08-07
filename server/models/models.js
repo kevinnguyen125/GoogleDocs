@@ -37,6 +37,7 @@ const documentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
+  content: mongoose.Schema.Types.mixed,
 });
 
 // Models
