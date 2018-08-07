@@ -1,17 +1,32 @@
 import React from 'react';
 
-
+import { AppBar, Toolbar, IconButton, Button, TextField } from '@material-ui/core';
+import { Menu } from '@material-ui/icons/';
 
 export default class DocsAppBar extends React.Component {
 
   render() {
-    <AppBar position="sticky">
-      <Toolbar>
-        <IconButton color="inherit">
-          <Menu />
-        </IconButton>
-      </Toolbar>
-    </AppBar>
+    return (
+      <AppBar position="sticky">
+        <Toolbar>
+          <IconButton color="inherit">
+            <Menu />
+          </IconButton>
+          <Button variant="outlined" color="primary" className="button" >
+            Login
+          </Button>
+          <Button variant="outlined" color="secondary" className="button">
+            SignUp
+          </Button>
+          <Button variant="outlined" disabled className="button">
+            Logout
+          </Button>
+          <TextField id="EnterDocId" label="DocID" margin="normal" id="DocId">
+            Logout
+          </TextField>
+        </Toolbar>
+      </AppBar>
+    );
   }
 
 }

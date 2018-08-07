@@ -4,6 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 </head>
 <body style="overflow: auto; background-color: rgba(0,0,0,0); margin: 0" >
+  <link rel="stylesheet" type="text/css" href="./styles.css"  />
   <div id="App"></div>
 </body>
 
@@ -20,6 +21,7 @@ const render = () => {
 
 render();
 if (module.hot) {
+  console.log(new Date());
   module.hot.accept(render);
 }
 </script>
