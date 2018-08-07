@@ -1,8 +1,9 @@
 import React from 'react';
-import { Button, Grid, Paper, AppBar, Toolbar, IconButton, List, ListItem, ListItemText } from '@material-ui/core';
+import { Button, Grid, Paper, AppBar, Toolbar, IconButton, List, ListItem,
+         FormControl, Select, MenuItem } from '@material-ui/core';
 import { Editor, EditorState, RichUtils } from 'draft-js';
 import { Menu, FormatBold, FormatItalic, FormatUnderlined, FormatColorText, FormatSize,
-        FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
+         FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import styles from './styles';
 
 export default class App extends React.Component {
@@ -130,6 +131,22 @@ export default class App extends React.Component {
                   onMouseDown={e => this.onSizeClick(e)}
                 >
                   <FormatSize /></IconButton>
+                <form>
+                  <FormControl style={this.styles.formControl}>
+                    <Select
+                      value={12}
+                      // onChange={this.handleChange}
+                      name="age"
+                      displayEmpty
+                      style={this.styles.selectEmpty}
+                      autoWidth
+                    >
+                      <MenuItem value={12}>12</MenuItem>
+                      <MenuItem value={14}>14</MenuItem>
+                      <MenuItem value={16}>16</MenuItem>
+                    </Select>
+                  </FormControl>
+                </form>
               </ListItem>
               <ListItem style={this.styles.horizFlex0}>
                 <IconButton

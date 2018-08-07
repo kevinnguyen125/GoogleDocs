@@ -22,6 +22,13 @@ const styles = {
     padding: '0.2em',
   },
 
+  formControl: {
+    margin: '0.2em',
+    minWidth: 10,
+  },
+  selectEmpty: {
+    marginTop: '0.4em',
+  },
 };
 
 export default styles;
