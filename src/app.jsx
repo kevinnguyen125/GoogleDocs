@@ -6,8 +6,29 @@ import { Menu, FormatBold, FormatItalic, FormatUnderlined, FormatColorText, Form
          FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import styles from './styles';
 
+import ColorPicker, { colorPickerPlugin } from 'draft-js-color-picker';
+
 window.tunnelIntoEditorState = EditorState;
 window.tunnelIntoRichUtils = RichUtils;
+
+
+const presetColors = [
+  '#ff00aa',
+  '#F5A623',
+  '#F8E71C',
+  '#8B572A',
+  '#7ED321',
+  '#417505',
+  '#BD10E0',
+  '#9013FE',
+  '#4A90E2',
+  '#50E3C2',
+  '#B8E986',
+  '#000000',
+  '#4A4A4A',
+  '#9B9B9B',
+  '#FFFFFF',
+];
 
 export default class App extends React.Component {
   constructor(props) {
@@ -23,6 +44,10 @@ export default class App extends React.Component {
     this.setDomEditorRef = (ref) => {
       this.domEditor = ref;
     };
+    //colors
+    this.updateEditorState = editorState => this.setState({ editorState });
+    this.getEditorState = () => this.state.editorState;
+    this.picker = colorPickerPlugin(this.updateEditorState, this.getEditorState);
   }
 
   componentDidMount() {
@@ -92,7 +117,6 @@ export default class App extends React.Component {
           </IconButton>
         </Toolbar>
       </AppBar>
-
       <div style={{ marginTop: 30 }}>
         <Grid container justify="center" spacing={8}>
           <Grid item xs={8}>
@@ -128,6 +152,17 @@ export default class App extends React.Component {
                   onMouseDown={e => this.onColorClick(e)}
                 >
                   <FormatColorText /></IconButton>
+              </ListItem>
+              <ListItem>
+                <div style={{ flex: '1 0 25%' }}>
+                  {/* Step 4: pass the functions to the color picker */}
+                  <ColorPicker
+                    toggleColor={color => this.picker.addColor(color)}
+                    presetColors={presetColors}
+                    color={this.picker.currentColor(this.state.editorState)}
+                  />
+                  <button onClick={this.picker.removeColor}>clear</button>
+                </div>
               </ListItem>
               <ListItem style={this.styles.horizFlex0}>
                 <IconButton
@@ -215,6 +250,7 @@ export default class App extends React.Component {
                 editorState={this.state.editorState}
                 onChange={this.onChange}
                 ref={this.setDomEditorRef}
+                customStyleFn={this.picker.customStyleFn}
               />
             </Paper>
           </Grid>
