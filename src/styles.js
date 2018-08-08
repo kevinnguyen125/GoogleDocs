@@ -1,33 +1,40 @@
 const styles = {
   mainEditor: {
-    padding: 10,
-    height: 400,
+    padding: 20,
+    height: 800,
     overflow: 'auto',
-    border: 'red solid 4px',
+    border: 'grey solid 4px',
   },
 
   mainEditorSelected: {
-    padding: 10,
-    height: 400,
+    padding: 20,
+    height: 800,
     overflow: 'auto',
-    border: 'blue solid 4px',
+    border: '3px solid #87CEFA',
+    WebkitTransition: 'all 0.30s ease-in-out',
+    MozTransition: 'all 0.30s ease-in-out',
+    MsTransition: 'all 0.30s ease-in-out',
+    OTransition: 'all 0.30s ease-in-out',
+    outline: 'none',
   },
 
-  iconButton: {
-    border: 'grey solid 2px',
+  formatButton: {
+    // border: 'grey solid 2px',
+    minWidth: 0,
+    minHeight: 0,
+    width: '1em',
+    height: '3em',
   },
 
   horizFlex0: {
     flex: 0,
-    padding: '0.2em',
+    padding: '0.1em',
+    height: '100%',
   },
 
   formControl: {
     margin: '0.2em',
     minWidth: 10,
-  },
-  selectEmpty: {
-    marginTop: '0.4em',
   },
 };
 

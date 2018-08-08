@@ -1,25 +1,30 @@
 import React from 'react';
-import { Button, Grid, Paper, AppBar, Toolbar, IconButton, List, ListItem,
-         FormControl, Select, MenuItem } from '@material-ui/core';
-import { Editor, EditorState, RichUtils } from 'draft-js';
-import { Menu, FormatBold, FormatItalic, FormatUnderlined, FormatColorText, FormatSize,
-         FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
+import { Button, Grid, List, ListItem, FormControl, Select, MenuItem, SvgIcon, Input, InputAdornment } from '@material-ui/core';
+import { FormatBold, FormatItalic, FormatUnderlined, FormatSize,
+         FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
+import PropTypes from 'prop-types';
 import styles from './styles';
 
 // ZZZZZZ - uncomment onMouseDown, pass all as Props in an object. key=eventname, value=callback.
 
-export default class App extends React.Component {
+// Text Color Icon w/ Custom Color
+function TextColorIcon(props) {
+  return (
+    <SvgIcon>
+      <path d="M0 0h24v24H0z" fill="none" />
+      <path fillOpacity="1" d="M0 20h24v4H0z" color={props.color} />
+      <path d="M11 3L5.5 17h2.25l1.12-3h6.25l1.12 3h2.25L13 3h-2zm-1.38 9L12 5.67 14.38 12H9.62z" />
+    </SvgIcon>
+  );
+}
+TextColorIcon.propTypes = {
+  color: PropTypes.string.isRequired,
+};
+
+export default class FormatToolbar extends React.Component {
   constructor(props) {
     super(props);
     this.styles = styles;
-    // this.state = {
-    //   editorState: EditorState.createEmpty(),
-    //   styling: styles.mainEditor,
-    // };
-    // this.onChange = editorState => this.setState({ editorState });
-    // this.setDomEditorRef = (ref) => {
-    //   this.domEditor = ref;
-    // };
   }
 
   render() {
@@ -31,116 +36,110 @@ export default class App extends React.Component {
     };
     console.count('RENDER-TOOLBAR');
     return (
-      <div>
-        <Grid item xs={8}>
-          <List style={flexContainer}>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onBoldClick(e)}
-              >
-                <FormatBold /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onItalicClick(e)}
-              >
-                <FormatItalic /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onUnderlineClick(e)}
-              >
-                <FormatUnderlined /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onColorClick(e)}
-              >
-                <FormatColorText /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onSizeClick(e)}
-              >
-                <FormatSize /></IconButton>
-              <form>
-                <FormControl style={this.styles.formControl}>
-                  <Select
-                    value={12}
-                    // onChange={this.handleChange}
-                    name="age"
-                    displayEmpty
-                    style={this.styles.selectEmpty}
-                    autoWidth
-                  >
-                    <MenuItem value={12}>12</MenuItem>
-                    <MenuItem value={14}>14</MenuItem>
-                    <MenuItem value={16}>16</MenuItem>
-                  </Select>
-                </FormControl>
-              </form>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onAlignLeftClick(e)}
-              >
-                <FormatAlignLeft /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onAlignCenterClick(e)}
-              >
-                <FormatAlignCenter /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onAlignRightClick(e)}
-              >
-                <FormatAlignRight /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onAlignBaselineClick(e)}
-              >
-                <FormatAlignJustify /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onListBulletedClick(e)}
-              >
-                <FormatListBulleted /></IconButton>
-            </ListItem>
-            <ListItem style={this.styles.horizFlex0}>
-              <IconButton
-                color="primary"
-                style={this.styles.iconButton}
-                // onMouseDown={e => this.onListNumberedClick(e)}
-              >
-                <FormatListNumbered /></IconButton>
-            </ListItem>
-          </List>
-        </Grid>
-      </div>
+      <Grid item xs={8}>
+        <List style={flexContainer}>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              onMouseDown={this.props.clickHandlers.bold}
+            >
+              <FormatBold /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              onMouseDown={this.props.clickHandlers.italic}
+            >
+              <FormatItalic /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              onMouseDown={this.props.clickHandlers.underline}
+            >
+              <FormatUnderlined /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              // onMouseDown={e => this.onColorClick(e)}
+            >
+              <TextColorIcon color="#0000FF" /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <form style={{ height: '2.5em' }}>
+              <FormControl style={this.styles.formControl}>
+                <Select
+                  value={12}
+                  // onChange={this.handleChange}
+                  name="size"
+                  input={<Input startAdornment={<InputAdornment position="start"><FormatSize color="primary" /></InputAdornment>} />}
+                  autoWidth
+                >
+                  <MenuItem value={12}>12</MenuItem>
+                  <MenuItem value={14}>14</MenuItem>
+                  <MenuItem value={16}>16</MenuItem>
+                  <MenuItem value={18}>18</MenuItem>
+                  <MenuItem value={20}>20</MenuItem>
+                </Select>
+              </FormControl>
+            </form>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              // onMouseDown={e => this.onAlignLeftClick(e)}
+            >
+              <FormatAlignLeft /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              // onMouseDown={e => this.onAlignCenterClick(e)}
+            >
+              <FormatAlignCenter /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              // onMouseDown={e => this.onAlignRightClick(e)}
+            >
+              <FormatAlignRight /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              // onMouseDown={e => this.onListBulletedClick(e)}
+            >
+              <FormatListBulleted /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
+              // onMouseDown={e => this.onListNumberedClick(e)}
+            >
+              <FormatListNumbered /></Button>
+          </ListItem>
+        </List>
+      </Grid>
     );
   }
 }

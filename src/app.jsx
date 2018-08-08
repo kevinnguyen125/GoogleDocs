@@ -1,9 +1,6 @@
 import React from 'react';
-import { Button, Grid, Paper, AppBar, Toolbar, IconButton, List, ListItem,
-         FormControl, Select, MenuItem } from '@material-ui/core';
+import { Button, Grid, Paper } from '@material-ui/core';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
-import { Menu, FormatBold, FormatItalic, FormatUnderlined, FormatColorText, FormatSize,
-         FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import styles from './styles';
 
 import DocsAppBar from './DocsAppBar';
@@ -28,130 +25,100 @@ export default class App extends React.Component {
   }
 
   saveToDB = () => {
-    const postData = (url = ``, data = {}) => {
+    const postData = (url = '', data = {}) => {
       // Default options are marked with *
-        return fetch(url, {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
-            mode: "cors", // no-cors, cors, *same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, same-origin, *omit
-            headers: {
-                "Content-Type": "application/json; charset=utf-8",
+      return fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, same-origin, *omit
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
                 // "Content-Type": "application/x-www-form-urlencoded",
-            },
-            redirect: "follow", // manual, *follow, error
-            referrer: "no-referrer", // no-referrer, *client
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
-        })
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // no-referrer, *client
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+      })
         .then(response => response.json()) // parses response to JSON
-        .catch(error => console.error(`Fetch Error =\n`, error));
+        .catch(error => console.error('Fetch Error =\n', error));
     };
 
-    postData(`http://192.168.7.132:8080/api/v1/Document`, {
+    postData('http://172.16.1.178:8080/api/v1/Document', {
       owner: '5b6a2349e091a31ebb4bffeb',
-      password: "hocho",
-      content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()))
+      password: 'hocho',
+      content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
     })
       .then(data => console.log(data)) // JSON from `response.json()` call
       .catch(error => console.error(error));
   }
 
   loadFromDB = () => {
-    const getData = (url = ``, data = {}) => {
+    const getData = (url = '') => {
       // Default options are marked with *
-        return fetch(url, {
-            method: "GET", // *GET, POST, PUT, DELETE, etc.
-            mode: "cors", // no-cors, cors, *same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, same-origin, *omit
-            headers: {
-                "Content-Type": "application/json; charset=utf-8",
+      return fetch(url, {
+        method: 'GET', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, same-origin, *omit
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
                 // "Content-Type": "application/x-www-form-urlencoded",
-            },
-            redirect: "follow", // manual, *follow, error
-            referrer: "no-referrer", // no-referrer, *client
-        })
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // no-referrer, *client
+      })
         .then(response => response.json()) // parses response to JSON
-        .catch(error => console.error(`Fetch Error =\n`, error));
+        .catch(error => console.error('Fetch Error =\n', error));
     };
 
-    getData(`http://192.168.7.132:8080/api/v1/Document/5b6a43bab4177520716f04b7`)
-      .then(data => {
+    getData('http://172.16.1.178:8080/api/v1/Document/5b6ab41327610623374dcfdf')
+      .then((data) => {
         console.log(data.content);
-        this.setState({ editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(data.content))) });
+        this.setState({ editorState:
+          EditorState.createWithContent(convertFromRaw(JSON.parse(data.content))) });
       }) // JSON from `response.json()` call
       .catch(error => console.error(error));
   }
 
-  roundTrip = ()=>{
-    let a= JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()));
+  roundTrip = () => {
+    const a = JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()));
     console.log(JSON.parse(a));
-    let b=EditorState.createWithContent(convertFromRaw(JSON.parse(a)));
-    console.log("BNBBBBBBB", b);
-    this.setState( {editorState : b});
+    const b = EditorState.createWithContent(convertFromRaw(JSON.parse(a)));
+    console.log('BNBBBBBBB', b);
+    this.setState({ editorState: b });
   }
 
-  onBoldClick(e) {
+  onBoldClick = (e) => {
     e.preventDefault();
     this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
   }
 
-  onItalicClick(e) {
+  onItalicClick = (e) => {
     e.preventDefault();
     this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'ITALIC'));
   }
 
-  onUnderlineClick(e) {
+  onUnderlineClick = (e) => {
     e.preventDefault();
     this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'UNDERLINE'));
   }
 
-  onColorClick(e) {
-    e.preventDefault();
-  }
-
-  onSizeClick(e) {
-    e.preventDefault();
-  }
-
-  onAlignLeftClick(e) {
-    e.preventDefault();
-  }
-
-  onAlignCenterClick(e) {
-    e.preventDefault();
-  }
-
-  onAlignRightClick(e) {
-    e.preventDefault();
-  }
-
-  onAlignJustifyClick(e) {
-    e.preventDefault();
-  }
-
-  onListBulletedClick(e) {
-    e.preventDefault();
-  }
-
-  onListNumberedClick(e) {
-    e.preventDefault();
-  }
-
   render() {
-    const flexContainer = {
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-      padding: 0,
-    };
     console.count('RENDER-APP');
+
+    const clickHandlers = {
+      bold: this.onBoldClick,
+      italic: this.onItalicClick,
+      underline: this.onUnderlineClick,
+    };
+
     return (<div>
       <DocsAppBar />
 
       <div style={{ marginTop: 30 }}>
         <Grid container justify="center" spacing={8}>
-          <FormatToolbar />
+          <FormatToolbar clickHandlers={clickHandlers} />
           <Grid item xs={8}>
             <Paper
               elevation={5}
