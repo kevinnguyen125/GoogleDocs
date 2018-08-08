@@ -3,9 +3,13 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItemIcon, ListItem, ListItemText,
-         Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Slide, ListSubheader } from '@material-ui/core/';
+         Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Slide, ListSubheader,
+         Grid, Paper } from '@material-ui/core/';
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Menu as MenuIcon, Description as DescriptionIcon,
          Cancel as CancelIcon, AccountBox as AccountBoxIcon } from '@material-ui/icons/';
+import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
+import FormatToolbar from './Components/FormatToolbar';
+import { colorPickerPlugin } from './Components/ColorPicker';
 
 const getData = (url = '') => {
   // Default options are marked with *
@@ -123,6 +127,38 @@ const styles = theme => ({
   'contentShift-right': {
     marginRight: 0,
   },
+  mainEditor: {
+    padding: 20,
+    height: 800,
+    overflow: 'auto',
+    border: 'grey solid 4px',
+  },
+  mainEditorSelected: {
+    padding: 20,
+    height: 800,
+    overflow: 'auto',
+    border: '3px solid #87CEFA',
+    WebkitTransition: 'all 0.30s ease-in-out',
+    MozTransition: 'all 0.30s ease-in-out',
+    MsTransition: 'all 0.30s ease-in-out',
+    OTransition: 'all 0.30s ease-in-out',
+    outline: 'none',
+  },
+  formatButton: {
+    minWidth: 0,
+    minHeight: 0,
+    width: '1em',
+    height: '3em',
+  },
+  horizFlex0: {
+    flex: 0,
+    padding: '0.1em',
+    height: '100%',
+  },
+  formControl: {
+    margin: '0.2em',
+    minWidth: 10,
+  },
 });
 
 function Transition(props) {
@@ -143,8 +179,16 @@ class DocsDrawer extends React.Component {
       signupPassword: '',
       signupPasswordRepeat: '',
       loggedInAs: '',
+      editorFocused: null,
+      editorState: EditorState.createEmpty(),
       documents: [],
     };
+    this.setDomEditorRef = (ref) => {
+      this.domEditor = ref;
+    };
+    this.updateEditorState = editorState => this.setState({ editorState });
+    this.getEditorState = () => this.state.editorState;
+    this.picker = colorPickerPlugin(this.updateEditorState, this.getEditorState);
   }
 
   componentDidMount() {
@@ -216,6 +260,21 @@ class DocsDrawer extends React.Component {
 
   handleLoadDoc = (id) => {
     console.log('ID:', id);
+  }
+
+  onBoldClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
+  }
+
+  onItalicClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, 'ITALIC'));
+  }
+
+  onUnderlineClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, 'UNDERLINE'));
   }
 
   render() {
@@ -348,6 +407,12 @@ class DocsDrawer extends React.Component {
       </Dialog>
     );
 
+    const clickHandlers = {
+      bold: this.onBoldClick,
+      italic: this.onItalicClick,
+      underline: this.onUnderlineClick,
+    };
+
     return (
       <div className={classes.root}>
         <div className={classes.appFrame}>
@@ -380,7 +445,30 @@ class DocsDrawer extends React.Component {
             })}
           >
             <div className={classes.drawerHeader} />
-            <Typography>{'You think water moves fast? You should see ice.'}</Typography>
+
+            <div id="editorContainer" style={{ marginTop: 30 }}>
+              <Grid container justify="center" spacing={8}>
+                <FormatToolbar clickHandlers={clickHandlers} updateES={this.updateEditorState} getES={this.getEditorState} picker={this.picker} />
+                <Grid item xs={8}>
+                  <Paper
+                    elevation={5}
+                    className={this.state.editorFocused ? classes.mainEditorSelected : classes.mainEditor}
+                    onClick={() => this.domEditor.focus()}
+                    onFocus={() => this.setState({ editorFocused: true })}
+                    onBlur={() => this.setState({ editorFocused: false })}
+                  >
+                    <Editor
+                      editorState={this.state.editorState}
+                      onChange={this.updateEditorState}
+                      ref={this.setDomEditorRef}
+                      customStyleFn={this.picker.customStyleFn}
+                    />
+                  </Paper>
+                  <Button variant="raised" color="primary">Save</Button>
+                </Grid>
+              </Grid>
+            </div>
+
           </main>
         </div>
       </div>

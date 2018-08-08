@@ -13,7 +13,7 @@ export default class App extends React.Component {
     this.styles = styles;
     this.state = {
       editorState: EditorState.createEmpty(),
-      styling: styles.mainEditor,
+      focused: null,
     };
     this.updateEditorState = editorState => this.setState({ editorState });
     this.getEditorState = () => this.state.editorState;
@@ -117,10 +117,10 @@ export default class App extends React.Component {
           <Grid item xs={8}>
             <Paper
               elevation={5}
-              style={this.state.styling}
+              style={this.state.focused ? this.styles.mainEditorSelected : this.styles.mainEditor}
               onClick={() => this.domEditor.focus()}
-              onFocus={() => this.setState({ styling: this.styles.mainEditorSelected })}
-              onBlur={() => this.setState({ styling: this.styles.mainEditor })}
+              onFocus={() => this.setState({ focused: true })}
+              onBlur={() => this.setState({ focused: false })}
             >
               <Editor
                 editorState={this.state.editorState}
