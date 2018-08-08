@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Grid, Paper, AppBar, Toolbar, IconButton, List, ListItem,
          FormControl, Select, MenuItem } from '@material-ui/core';
-import { Editor, EditorState, RichUtils } from 'draft-js';
+import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 import { Menu, FormatBold, FormatItalic, FormatUnderlined, FormatColorText, FormatSize,
          FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import styles from './styles';
@@ -25,6 +25,70 @@ export default class App extends React.Component {
 
   componentDidMount() {
     this.domEditor.focus();
+  }
+
+  saveToDB = () => {
+    const postData = (url = ``, data = {}) => {
+      // Default options are marked with *
+        return fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, same-origin, *omit
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        })
+        .then(response => response.json()) // parses response to JSON
+        .catch(error => console.error(`Fetch Error =\n`, error));
+    };
+
+    postData(`http://192.168.7.132:8080/api/v1/Document`, {
+      owner: '5b6a2349e091a31ebb4bffeb',
+      password: "hocho",
+      content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()))
+    })
+      .then(data => console.log(data)) // JSON from `response.json()` call
+      .catch(error => console.error(error));
+  }
+
+  loadFromDB = () => {
+    const getData = (url = ``, data = {}) => {
+      // Default options are marked with *
+        return fetch(url, {
+            method: "GET", // *GET, POST, PUT, DELETE, etc.
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, same-origin, *omit
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+        })
+        .then(response => response.json()) // parses response to JSON
+        .catch(error => console.error(`Fetch Error =\n`, error));
+    };
+
+    getData(`http://192.168.7.132:8080/api/v1/Document/5b6a43bab4177520716f04b7`)
+      .then(data => {
+        console.log(data.content);
+        this.setState({ editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(data.content))) });
+      }) // JSON from `response.json()` call
+      .catch(error => console.error(error));
+  }
+
+  roundTrip = ()=>{
+    let a= JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()));
+    console.log(JSON.parse(a));
+    let b=EditorState.createWithContent(convertFromRaw(JSON.parse(a)));
+    console.log("BNBBBBBBB", b);
+    this.setState( {editorState : b});
   }
 
   onBoldClick(e) {
@@ -102,6 +166,9 @@ export default class App extends React.Component {
                 ref={this.setDomEditorRef}
               />
             </Paper>
+            <Button onClick={this.saveToDB}>Save</Button>
+            <Button onClick={this.loadFromDB}>Load</Button>
+            <Button onClick={this.roundTrip}>RoundTrip</Button>
           </Grid>
         </Grid>
       </div>
