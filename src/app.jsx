@@ -1,10 +1,11 @@
 import React from 'react';
 import { Button, Grid, Paper } from '@material-ui/core';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
-import styles from './styles';
 
-import DocsAppBar from './DocsAppBar';
-import FormatToolbar from './FormatToolbar';
+import styles from './styles';
+import DocsAppBar from './Components/DocsAppBar';
+import FormatToolbar from './Components/FormatToolbar';
+import { colorPickerPlugin } from './Components/ColorPicker';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -14,7 +15,9 @@ export default class App extends React.Component {
       editorState: EditorState.createEmpty(),
       styling: styles.mainEditor,
     };
-    this.onChange = editorState => this.setState({ editorState });
+    this.updateEditorState = editorState => this.setState({ editorState });
+    this.getEditorState = () => this.state.editorState;
+    this.picker = colorPickerPlugin(this.updateEditorState, this.getEditorState);
     this.setDomEditorRef = (ref) => {
       this.domEditor = ref;
     };
@@ -91,17 +94,17 @@ export default class App extends React.Component {
 
   onBoldClick = (e) => {
     e.preventDefault();
-    this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
+    this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
   }
 
   onItalicClick = (e) => {
     e.preventDefault();
-    this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'ITALIC'));
+    this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, 'ITALIC'));
   }
 
   onUnderlineClick = (e) => {
     e.preventDefault();
-    this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, 'UNDERLINE'));
+    this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, 'UNDERLINE'));
   }
 
   render() {
@@ -118,7 +121,7 @@ export default class App extends React.Component {
 
       <div style={{ marginTop: 30 }}>
         <Grid container justify="center" spacing={8}>
-          <FormatToolbar clickHandlers={clickHandlers} />
+          <FormatToolbar clickHandlers={clickHandlers} updateES={this.updateEditorState} getES={this.getEditorState} picker={this.picker} />
           <Grid item xs={8}>
             <Paper
               elevation={5}
@@ -129,8 +132,9 @@ export default class App extends React.Component {
             >
               <Editor
                 editorState={this.state.editorState}
-                onChange={this.onChange}
+                onChange={this.updateEditorState}
                 ref={this.setDomEditorRef}
+                customStyleFn={this.picker.customStyleFn}
               />
             </Paper>
             <Button onClick={this.saveToDB}>Save</Button>

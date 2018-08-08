@@ -2,8 +2,6 @@ import React from 'react';
 import { Menu as MenuIcon } from '@material-ui/icons';
 import { AppBar, Toolbar, IconButton, Button, TextField, Menu, MenuItem } from '@material-ui/core';
 
-
-
 export default class DocsAppBar extends React.Component {
   constructor(props) {
     super(props);
@@ -18,34 +16,34 @@ export default class DocsAppBar extends React.Component {
   };
 
   handleLoginClose = () => {
-    this.setState({ loginEl: null});
+    this.setState({ loginEl: null });
   };
 
   handleLoginSubmit = () => {
-    console.log("LoginSubmit");
+    console.log('LoginSubmit');
 
-    const postData = (url = ``, data = {}) => {
+    const postData = (url = '', data = {}) => {
       // Default options are marked with *
-        return fetch(url, {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
-            mode: "cors", // no-cors, cors, *same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, same-origin, *omit
-            headers: {
-                "Content-Type": "application/json; charset=utf-8",
+      return fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, same-origin, *omit
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
                 // "Content-Type": "application/x-www-form-urlencoded",
-            },
-            redirect: "follow", // manual, *follow, error
-            referrer: "no-referrer", // no-referrer, *client
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
-        })
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // no-referrer, *client
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+      })
         .then(response => response.json()) // parses response to JSON
-        .catch(error => console.error(`Fetch Error =\n`, error));
+        .catch(error => console.error('Fetch Error =\n', error));
     };
 
-    postData(`http://192.168.7.132:8080/login`, {
-      username: "hocho",
-      password: "hocho"
+    postData('http://192.168.7.132:8080/login', {
+      username: 'hocho',
+      password: 'hocho',
     })
       .then(data => console.log(data)) // JSON from `response.json()` call
       .catch(error => console.error(error));
@@ -56,7 +54,7 @@ export default class DocsAppBar extends React.Component {
   };
 
   handleSignUpClose = () => {
-    this.setState({ signUpEl: null});
+    this.setState({ signUpEl: null });
   };
 
   render() {
@@ -77,10 +75,10 @@ export default class DocsAppBar extends React.Component {
             onClose={this.handleLoginClose}
           >
             <MenuItem onClose={this.handleLoginClose}>
-              <TextField id="username" label="username" margin="normal" id="username">Username</TextField>
+              <TextField id="username" label="username" margin="normal">Username</TextField>
             </MenuItem>
             <MenuItem onClose={this.handleLoginClose}>
-              <TextField id="password" label="password" margin="normal" id="password">Password</TextField>
+              <TextField id="password" label="password" margin="normal">Password</TextField>
             </MenuItem>
             <MenuItem onClose={this.handleLoginClose}><Button onClick={this.handleLoginSubmit}>Submit</Button></MenuItem>
           </Menu>
@@ -94,13 +92,13 @@ export default class DocsAppBar extends React.Component {
             onClose={this.handleSignUpClose}
           >
             <MenuItem onClose={this.handleSignUpClose}>
-              <TextField id="Susername" label="username" margin="normal" id="username">Username</TextField>
+              <TextField id="Susername" label="username" margin="normal">Username</TextField>
             </MenuItem>
             <MenuItem onClose={this.handleSignUpClose}>
-              <TextField id="Spassword" label="password" margin="normal" id="password">Password</TextField>
+              <TextField id="Spassword" label="password" margin="normal">Password</TextField>
             </MenuItem>
             <MenuItem onClose={this.handleSignUpClose}>
-              <TextField id="Rpassword" label="password" margin="normal" id="password">Repeat Password</TextField>
+              <TextField id="Rpassword" label="password" margin="normal">Repeat Password</TextField>
             </MenuItem>
             <MenuItem onClose={this.handleSignUpClose}><Button>Submit</Button></MenuItem>
           </Menu>

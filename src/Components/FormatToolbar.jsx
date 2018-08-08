@@ -3,23 +3,10 @@ import { Button, Grid, List, ListItem, FormControl, Select, MenuItem, SvgIcon, I
 import { FormatBold, FormatItalic, FormatUnderlined, FormatSize,
          FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import PropTypes from 'prop-types';
-import styles from './styles';
+import ColorPicker from './ColorPicker';
+import styles from '../styles';
 
 // ZZZZZZ - uncomment onMouseDown, pass all as Props in an object. key=eventname, value=callback.
-
-// Text Color Icon w/ Custom Color
-function TextColorIcon(props) {
-  return (
-    <SvgIcon>
-      <path d="M0 0h24v24H0z" fill="none" />
-      <path fillOpacity="1" d="M0 20h24v4H0z" color={props.color} />
-      <path d="M11 3L5.5 17h2.25l1.12-3h6.25l1.12 3h2.25L13 3h-2zm-1.38 9L12 5.67 14.38 12H9.62z" />
-    </SvgIcon>
-  );
-}
-TextColorIcon.propTypes = {
-  color: PropTypes.string.isRequired,
-};
 
 export default class FormatToolbar extends React.Component {
   constructor(props) {
@@ -66,13 +53,10 @@ export default class FormatToolbar extends React.Component {
               <FormatUnderlined /></Button>
           </ListItem>
           <ListItem style={this.styles.horizFlex0}>
-            <Button
-              color="primary"
-              variant="outlined"
-              style={this.styles.formatButton}
-              // onMouseDown={e => this.onColorClick(e)}
-            >
-              <TextColorIcon color="#0000FF" /></Button>
+            <ColorPicker
+              toggleColor={color => this.props.picker.addColor(color)}
+              color={this.props.picker.currentColor(this.props.getES())}
+            />
           </ListItem>
           <ListItem style={this.styles.horizFlex0}>
             <form style={{ height: '2.5em' }}>
