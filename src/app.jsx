@@ -6,7 +6,8 @@ import { Menu, FormatBold, FormatItalic, FormatUnderlined, FormatColorText, Form
          FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import styles from './styles';
 
-import DocsAppBar from './DocsAppBar.jsx';
+import DocsAppBar from './DocsAppBar';
+import FormatToolbar from './FormatToolbar';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -86,114 +87,7 @@ export default class App extends React.Component {
 
       <div style={{ marginTop: 30 }}>
         <Grid container justify="center" spacing={8}>
-          <Grid item xs={8}>
-            <List style={flexContainer}>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onBoldClick(e)}
-                >
-                  <FormatBold /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onItalicClick(e)}
-                >
-                  <FormatItalic /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onUnderlineClick(e)}
-                >
-                  <FormatUnderlined /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onColorClick(e)}
-                >
-                  <FormatColorText /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onSizeClick(e)}
-                >
-                  <FormatSize /></IconButton>
-                <form>
-                  <FormControl style={this.styles.formControl}>
-                    <Select
-                      value={12}
-                      // onChange={this.handleChange}
-                      name="age"
-                      displayEmpty
-                      style={this.styles.selectEmpty}
-                      autoWidth
-                    >
-                      <MenuItem value={12}>12</MenuItem>
-                      <MenuItem value={14}>14</MenuItem>
-                      <MenuItem value={16}>16</MenuItem>
-                    </Select>
-                  </FormControl>
-                </form>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onAlignLeftClick(e)}
-                >
-                  <FormatAlignLeft /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onAlignCenterClick(e)}
-                >
-                  <FormatAlignCenter /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onAlignRightClick(e)}
-                >
-                  <FormatAlignRight /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onAlignBaselineClick(e)}
-                >
-                  <FormatAlignJustify /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onListBulletedClick(e)}
-                >
-                  <FormatListBulleted /></IconButton>
-              </ListItem>
-              <ListItem style={this.styles.horizFlex0}>
-                <IconButton
-                  color="primary"
-                  style={this.styles.iconButton}
-                  onMouseDown={e => this.onListNumberedClick(e)}
-                >
-                  <FormatListNumbered /></IconButton>
-              </ListItem>
-            </List>
-          </Grid>
+          <FormatToolbar />
           <Grid item xs={8}>
             <Paper
               elevation={5}
