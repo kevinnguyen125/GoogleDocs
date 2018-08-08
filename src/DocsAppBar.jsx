@@ -1,6 +1,7 @@
 import React from 'react';
+import { Menu as MenuIcon } from '@material-ui/icons';
 import { AppBar, Toolbar, IconButton, Button, TextField, Menu, MenuItem } from '@material-ui/core';
-import { Home } from '@material-ui/icons';
+
 
 
 export default class DocsAppBar extends React.Component {
@@ -20,6 +21,36 @@ export default class DocsAppBar extends React.Component {
     this.setState({ loginEl: null});
   };
 
+  handleLoginSubmit = () => {
+    console.log("LoginSubmit");
+
+    const postData = (url = ``, data = {}) => {
+      // Default options are marked with *
+        return fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, same-origin, *omit
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        })
+        .then(response => response.json()) // parses response to JSON
+        .catch(error => console.error(`Fetch Error =\n`, error));
+    };
+
+    postData(`http://192.168.7.132:8080/login`, {
+      username: "hocho",
+      password: "hocho"
+    })
+      .then(data => console.log(data)) // JSON from `response.json()` call
+      .catch(error => console.error(error));
+  }
+
   handleSignUpClick = (event) => {
     this.setState({ signUpEl: event.currentTarget });
   };
@@ -34,7 +65,7 @@ export default class DocsAppBar extends React.Component {
       <AppBar position="sticky">
         <Toolbar>
           <IconButton color="inherit">
-            <Home />
+            <MenuIcon />
           </IconButton>
           <Button variant="outlined" color="primary" className="button" onClick={this.handleLoginClick}>
             Login
@@ -51,7 +82,7 @@ export default class DocsAppBar extends React.Component {
             <MenuItem onClose={this.handleLoginClose}>
               <TextField id="password" label="password" margin="normal" id="password">Password</TextField>
             </MenuItem>
-            <MenuItem onClose={this.handleLoginClose}><Button>Submit</Button></MenuItem>
+            <MenuItem onClose={this.handleLoginClose}><Button onClick={this.handleLoginSubmit}>Submit</Button></MenuItem>
           </Menu>
           <Button variant="outlined" color="secondary" className="button" onClick={this.handleSignUpClick}>
             SignUp
