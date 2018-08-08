@@ -27,8 +27,8 @@ app.use(cookieParser());
 app.use(methodOverride());
 
 // Hash Function
-const hash = crypto.createHash('sha256');
 const hashPassword = (password) => {
+  const hash = crypto.createHash('sha256');
   hash.update(password);
   return hash.digest('hex');
 };
