@@ -5,6 +5,8 @@ import { User } from '../models/models.js';
 const router = express.Router();
 
 export default (passport) => {
+  router.get('/', (req, res) => { console.log('USER', req.user); if (req.user) res.send('Working:', req.user); });
+
   // POST Login Request
   router.post('/login',
     passport.authenticate('local'),

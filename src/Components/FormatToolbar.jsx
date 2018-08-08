@@ -1,8 +1,7 @@
 import React from 'react';
-import { Button, Grid, List, ListItem, FormControl, Select, MenuItem, SvgIcon, Input, InputAdornment } from '@material-ui/core';
+import { Button, Grid, List, ListItem, FormControl, Select, MenuItem, Input, InputAdornment } from '@material-ui/core';
 import { FormatBold, FormatItalic, FormatUnderlined, FormatSize,
          FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
-import PropTypes from 'prop-types';
 import ColorPicker from './ColorPicker';
 import styles from '../styles';
 

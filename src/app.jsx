@@ -47,7 +47,7 @@ export default class App extends React.Component {
         .catch(error => console.error('Fetch Error =\n', error));
     };
 
-    postData('http://172.16.1.178:8080/api/v1/Document', {
+    postData('http://192.168.7.132:8080/api/v1/Document', {
       owner: '5b6a2349e091a31ebb4bffeb',
       password: 'hocho',
       content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
@@ -75,21 +75,13 @@ export default class App extends React.Component {
         .catch(error => console.error('Fetch Error =\n', error));
     };
 
-    getData('http://172.16.1.178:8080/api/v1/Document/5b6ab41327610623374dcfdf')
+    getData('http://192.168.7.132:8080/api/v1/Document/5b6ab41327610623374dcfdf')
       .then((data) => {
         console.log(data.content);
         this.setState({ editorState:
           EditorState.createWithContent(convertFromRaw(JSON.parse(data.content))) });
       }) // JSON from `response.json()` call
       .catch(error => console.error(error));
-  }
-
-  roundTrip = () => {
-    const a = JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()));
-    console.log(JSON.parse(a));
-    const b = EditorState.createWithContent(convertFromRaw(JSON.parse(a)));
-    console.log('BNBBBBBBB', b);
-    this.setState({ editorState: b });
   }
 
   onBoldClick = (e) => {
@@ -137,9 +129,8 @@ export default class App extends React.Component {
                 customStyleFn={this.picker.customStyleFn}
               />
             </Paper>
-            <Button onClick={this.saveToDB}>Save</Button>
-            <Button onClick={this.loadFromDB}>Load</Button>
-            <Button onClick={this.roundTrip}>RoundTrip</Button>
+            <Button variant="raised" color="primary" onClick={this.saveToDB}>Save</Button>
+            <Button variant="raised" color="primary" onClick={this.loadFromDB}>Load</Button>
           </Grid>
         </Grid>
       </div>
