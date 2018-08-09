@@ -8,6 +8,7 @@ import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListIte
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Menu as MenuIcon, Description as DescriptionIcon,
          Cancel as CancelIcon, AccountBox as AccountBoxIcon, Save as SaveIcon } from '@material-ui/icons/';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
+import createStyles from 'draft-js-custom-styles';
 import FormatToolbar from './Components/FormatToolbar';
 import { colorPickerPlugin } from './Components/ColorPicker';
 
@@ -192,6 +193,17 @@ function TransitionUp(props) {
   return <Slide direction="up" {...props} />;
 }
 
+const customStyleMap = {};
+[12, 14, 16, 18, 20, 24, 36].forEach((x) => { customStyleMap[`text${x}`] = { fontSize: x }; });
+console.log(customStyleMap);
+
+
+/* Have draft-js-custom-styles build help functions for toggling font-size, color */
+const styleReturn = createStyles(['font-size', 'color'], customStyleMap);
+// const formatStyles = styleReturn.styles;
+const altCustomStyleFn = styleReturn.customStyleFn;
+
+
 class DocsDrawer extends React.Component {
   constructor(props) {
     super(props);
@@ -221,6 +233,11 @@ class DocsDrawer extends React.Component {
     this.updateEditorState = editorState => this.setState({ editorState });
     this.getEditorState = () => this.state.editorState;
     this.picker = colorPickerPlugin(this.updateEditorState, this.getEditorState);
+
+    this.joinedCustomStyleFn = (...x) => {
+      console.log('CUSTOM INLINE', altCustomStyleFn(...x));
+      return altCustomStyleFn(...x) || this.picker.customStyleFn(...x);
+    };
   }
 
   componentDidMount() {
@@ -351,6 +368,28 @@ class DocsDrawer extends React.Component {
   onUnderlineClick = (e) => {
     e.preventDefault();
     this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, 'UNDERLINE'));
+  }
+
+  onAlignCenterClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleBlockType(this.state.editorState, 'text-align-center'));
+  }
+
+  onAlignLeftClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleBlockType(this.state.editorState, 'text-align-left'));
+  }
+
+  onAlignRightClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleBlockType(this.state.editorState, 'text-align-right'));
+  }
+
+  onFontSizeClick = (e) => {
+    e.preventDefault();
+    console.log('E TARGET ', e.target, e.target['data-value']);
+    const size = Number(e.target.getAttribute('data-value'));
+    this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, `text${size}`));
   }
 
   render() {
@@ -524,6 +563,10 @@ class DocsDrawer extends React.Component {
       bold: this.onBoldClick,
       italic: this.onItalicClick,
       underline: this.onUnderlineClick,
+      alignCenter: this.onAlignCenterClick,
+      alignLeft: this.onAlignLeftClick,
+      alignRight: this.onAlignRightClick,
+      fontSize: this.onFontSizeClick,
     };
 
     return (
@@ -580,7 +623,9 @@ class DocsDrawer extends React.Component {
                       editorState={this.state.editorState}
                       onChange={this.updateEditorState}
                       ref={this.setDomEditorRef}
-                      customStyleFn={this.picker.customStyleFn}
+                      customStyleMap={customStyleMap}
+                      customStyleFn={this.joinedCustomStyleFn}
+                      blockStyleFn={block => block.getType()}
                     />
                   </Paper>
                   <Tooltip title="Save" placement="right">

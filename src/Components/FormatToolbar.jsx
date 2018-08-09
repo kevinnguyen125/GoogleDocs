@@ -67,11 +67,13 @@ export default class FormatToolbar extends React.Component {
                   input={<Input startAdornment={<InputAdornment position="start"><FormatSize color="primary" /></InputAdornment>} />}
                   autoWidth
                 >
-                  <MenuItem value={12}>12</MenuItem>
-                  <MenuItem value={14}>14</MenuItem>
-                  <MenuItem value={16}>16</MenuItem>
-                  <MenuItem value={18}>18</MenuItem>
-                  <MenuItem value={20}>20</MenuItem>
+                  <MenuItem value={12} onMouseDown={this.props.clickHandlers.fontSize}>12</MenuItem>
+                  <MenuItem value={14} onMouseDown={this.props.clickHandlers.fontSize}>14</MenuItem>
+                  <MenuItem value={16} onMouseDown={this.props.clickHandlers.fontSize}>16</MenuItem>
+                  <MenuItem value={18} onMouseDown={this.props.clickHandlers.fontSize}>18</MenuItem>
+                  <MenuItem value={20} onMouseDown={this.props.clickHandlers.fontSize}>20</MenuItem>
+                  <MenuItem value={24} onMouseDown={this.props.clickHandlers.fontSize}>24</MenuItem>
+                  <MenuItem value={36} onMouseDown={this.props.clickHandlers.fontSize}>36</MenuItem>
                 </Select>
               </FormControl>
             </form>
@@ -81,7 +83,7 @@ export default class FormatToolbar extends React.Component {
               color="primary"
               variant="outlined"
               style={this.styles.formatButton}
-              // onMouseDown={e => this.onAlignLeftClick(e)}
+              onMouseDown={this.props.clickHandlers.alignLeft}
             >
               <FormatAlignLeft /></Button>
           </ListItem>
@@ -90,7 +92,7 @@ export default class FormatToolbar extends React.Component {
               color="primary"
               variant="outlined"
               style={this.styles.formatButton}
-              // onMouseDown={e => this.onAlignCenterClick(e)}
+              onMouseDown={this.props.clickHandlers.alignCenter}
             >
               <FormatAlignCenter /></Button>
           </ListItem>
@@ -99,7 +101,7 @@ export default class FormatToolbar extends React.Component {
               color="primary"
               variant="outlined"
               style={this.styles.formatButton}
-              // onMouseDown={e => this.onAlignRightClick(e)}
+              onMouseDown={this.props.clickHandlers.alignRight}
             >
               <FormatAlignRight /></Button>
           </ListItem>
