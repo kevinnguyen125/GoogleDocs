@@ -392,6 +392,11 @@ class DocsDrawer extends React.Component {
     this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, `text${size}`));
   }
 
+  onBulletPointClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleBlockType(this.state.editorState, 'unordered-list-item'));
+  }
+
   render() {
     const { classes } = this.props;
     const { drawerOpen } = this.state;
@@ -567,6 +572,7 @@ class DocsDrawer extends React.Component {
       alignLeft: this.onAlignLeftClick,
       alignRight: this.onAlignRightClick,
       fontSize: this.onFontSizeClick,
+      bulletPoint: this.onBulletPointClick,
     };
 
     return (

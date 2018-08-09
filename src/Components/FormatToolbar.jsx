@@ -110,7 +110,7 @@ export default class FormatToolbar extends React.Component {
               color="primary"
               variant="outlined"
               style={this.styles.formatButton}
-              // onMouseDown={e => this.onListBulletedClick(e)}
+              onMouseDown={this.props.clickHandlers.bulletPoint}
             >
               <FormatListBulleted /></Button>
           </ListItem>
