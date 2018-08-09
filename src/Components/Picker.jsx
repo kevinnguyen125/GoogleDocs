@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { GithubPicker } from 'react-color';
 import { SvgIcon, Button } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import styles from '../styles';
 
 // Text Color Icon w/ Custom Color
 function TextColorIcon(props) {
@@ -21,7 +20,6 @@ TextColorIcon.propTypes = {
 class PickerComponent extends Component {
   constructor(props) {
     super(props);
-    this.styles = styles;
     this.state = {
       displayColorPicker: false,
       color: {
@@ -61,6 +59,12 @@ class PickerComponent extends Component {
         bottom: '0px',
         left: '0px',
       },
+      formatButton: {
+        minWidth: 0,
+        minHeight: 0,
+        width: '1em',
+        height: '3em',
+      },
     };
 
     const picker = (
@@ -84,7 +88,7 @@ class PickerComponent extends Component {
         <Button
           color="primary"
           variant="outlined"
-          style={this.styles.formatButton}
+          style={pickerStyles.formatButton}
           onMouseDown={this.handleButtonMouseDown}
         >
           <TextColorIcon color={this.props.color

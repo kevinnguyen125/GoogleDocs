@@ -1,11 +1,9 @@
 import React from 'react';
 import { Button, Grid, List, ListItem, FormControl, Select, MenuItem, Input, InputAdornment } from '@material-ui/core';
 import { FormatBold, FormatItalic, FormatUnderlined, FormatSize,
-         FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
+         FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify, FormatListBulleted, FormatListNumbered } from '@material-ui/icons/';
 import ColorPicker from './ColorPicker';
 import styles from '../styles';
-
-// ZZZZZZ - uncomment onMouseDown, pass all as Props in an object. key=eventname, value=callback.
 
 export default class FormatToolbar extends React.Component {
   constructor(props) {
@@ -62,10 +60,9 @@ export default class FormatToolbar extends React.Component {
               <FormControl style={this.styles.formControl}>
                 <Select
                   value={12}
-                  // onChange={this.handleChange}
-                  name="size"
                   input={<Input startAdornment={<InputAdornment position="start"><FormatSize color="primary" /></InputAdornment>} />}
                   autoWidth
+                  onClick={this.props.f}
                 >
                   <MenuItem value={12} onMouseDown={this.props.clickHandlers.fontSize}>12</MenuItem>
                   <MenuItem value={14} onMouseDown={this.props.clickHandlers.fontSize}>14</MenuItem>
@@ -110,6 +107,15 @@ export default class FormatToolbar extends React.Component {
               color="primary"
               variant="outlined"
               style={this.styles.formatButton}
+              onMouseDown={this.props.clickHandlers.alignJustify}
+            >
+              <FormatAlignJustify /></Button>
+          </ListItem>
+          <ListItem style={this.styles.horizFlex0}>
+            <Button
+              color="primary"
+              variant="outlined"
+              style={this.styles.formatButton}
               onMouseDown={this.props.clickHandlers.bulletPoint}
             >
               <FormatListBulleted /></Button>
@@ -119,7 +125,7 @@ export default class FormatToolbar extends React.Component {
               color="primary"
               variant="outlined"
               style={this.styles.formatButton}
-              // onMouseDown={e => this.onListNumberedClick(e)}
+              onMouseDown={this.props.clickHandlers.numbered}
             >
               <FormatListNumbered /></Button>
           </ListItem>

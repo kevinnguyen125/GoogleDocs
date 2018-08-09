@@ -92,6 +92,23 @@ const patchData = (url = '', data = {}) => {
     .catch(error => console.error('Fetch Error =\n', error));
 };
 
+const deleteData = (url = '') => {
+  // Default options are marked with *
+  return fetch(url, {
+    method: 'DELETE', // *GET, POST, PUT, DELETE, etc.
+    mode: 'cors', // no-cors, cors, *same-origin
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'same-origin', // include, same-origin, *omit
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+            // "Content-Type": "application/x-www-form-urlencoded",
+    },
+    redirect: 'follow', // manual, *follow, error
+    referrer: 'no-referrer', // no-referrer, *client
+  })
+    .catch(error => console.error('Fetch Error =\n', error));
+};
+
 const drawerWidth = 300;
 
 const styles = theme => ({
@@ -221,16 +238,14 @@ function TransitionUp(props) {
   return <Slide direction="up" {...props} />;
 }
 
-const customStyleMap = {};
-[12, 14, 16, 18, 20, 24, 36].forEach((x) => { customStyleMap[`text${x}`] = { fontSize: x }; });
-console.log(customStyleMap);
+const customStyleMap = {}; // Don't need anymore if not doing anything fancy!
+// [12, 14, 16, 18, 20, 24, 36].forEach((x) => { customStyleMap[`text${x}`] = { fontSize: x }; });
+// this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, `text${size}`));
 
-
-/* Have draft-js-custom-styles build help functions for toggling font-size, color */
-const styleReturn = createStyles(['font-size', 'color'], customStyleMap);
-// const formatStyles = styleReturn.styles;
+/* draft-js-custom-styles builds functions for toggling css properties */
+const styleReturn = createStyles(['font-size', 'color', 'background-color'], customStyleMap);
+const formatStyles = styleReturn.styles;
 const altCustomStyleFn = styleReturn.customStyleFn;
-
 
 class DocsDrawer extends React.Component {
   constructor(props) {
@@ -242,6 +257,9 @@ class DocsDrawer extends React.Component {
       docInfoOpen: false,
       isLoggedIn: false,
       loginMsgOpen: false,
+      signupMsgOpen: false,
+      deleteMsgOpen: false,
+      newdocMsgOpen: false,
       loginUsername: '',
       loginPassword: '',
       signupUsername: '',
@@ -262,9 +280,7 @@ class DocsDrawer extends React.Component {
     this.updateEditorState = editorState => this.setState({ editorState });
     this.getEditorState = () => this.state.editorState;
     this.picker = colorPickerPlugin(this.updateEditorState, this.getEditorState);
-
     this.joinedCustomStyleFn = (...x) => {
-      console.log('CUSTOM INLINE', altCustomStyleFn(...x));
       return altCustomStyleFn(...x) || this.picker.customStyleFn(...x);
     };
   }
@@ -384,6 +400,28 @@ class DocsDrawer extends React.Component {
     }
   }
 
+  handleCreateDoc = () => {
+    this.setState({ documentTitle: 'Untitled (Not Saved)', documentPassword: '', documentId: '', editorState: EditorState.createEmpty(), newdocMsgOpen: true });
+  }
+
+  handleDeleteDoc = () => {
+    if (this.state.documentId) {
+      deleteData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`)
+        .then((data) => {
+          console.log(data);
+          this.setState({
+            documentTitle: 'Untitled (Not Saved)',
+            documentPassword: '',
+            documentId: '',
+            editorState: EditorState.createEmpty(),
+            deleteMsgOpen: true,
+            documents: this.state.documents.filter(d => d._id !== this.state.documentId),
+          });
+        })
+        .catch(err => console.log(err));
+    }
+  }
+
   onBoldClick = (e) => {
     e.preventDefault();
     this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, 'BOLD'));
@@ -414,11 +452,15 @@ class DocsDrawer extends React.Component {
     this.updateEditorState(RichUtils.toggleBlockType(this.state.editorState, 'text-align-right'));
   }
 
+  onAlignJustifyClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleBlockType(this.state.editorState, 'text-align-justify'));
+  }
+
   onFontSizeClick = (e) => {
     e.preventDefault();
-    console.log('E TARGET ', e.target, e.target['data-value']);
     const size = Number(e.target.getAttribute('data-value'));
-    this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, `text${size}`));
+    this.updateEditorState(formatStyles.fontSize.toggle(this.state.editorState, `${size}px`));
   }
 
   onBulletPointClick = (e) => {
@@ -426,9 +468,15 @@ class DocsDrawer extends React.Component {
     this.updateEditorState(RichUtils.toggleBlockType(this.state.editorState, 'unordered-list-item'));
   }
 
+  onNumberedClick = (e) => {
+    e.preventDefault();
+    this.updateEditorState(RichUtils.toggleBlockType(this.state.editorState, 'ordered-list-item'));
+  }
+
   render() {
     const { classes } = this.props;
     const { drawerOpen } = this.state;
+
     const drawer = (
       <Drawer
         variant="persistent"
@@ -602,8 +650,10 @@ class DocsDrawer extends React.Component {
       alignCenter: this.onAlignCenterClick,
       alignLeft: this.onAlignLeftClick,
       alignRight: this.onAlignRightClick,
+      alignJustify: this.onAlignJustifyClick,
       fontSize: this.onFontSizeClick,
       bulletPoint: this.onBulletPointClick,
+      numbered: this.onNumberedClick,
     };
 
     return (
@@ -648,7 +698,7 @@ class DocsDrawer extends React.Component {
                     <Typography variant="title" style={{ fontSize: 30 }}>{this.state.documentTitle}</Typography>
                   </Grid>
                 </Grid>
-                <FormatToolbar clickHandlers={clickHandlers} updateES={this.updateEditorState} getES={this.getEditorState} picker={this.picker} />
+                <FormatToolbar clickHandlers={clickHandlers} updateES={this.updateEditorState} getES={this.getEditorState} picker={this.picker} f={() => setTimeout(this.domEditor.focus, 0)} />
                 <Grid item xs={8}>
                   <Paper
                     elevation={5}
@@ -666,7 +716,7 @@ class DocsDrawer extends React.Component {
                       blockStyleFn={block => block.getType()}
                     />
                   </Paper>
-                  <Tooltip title="Create" placement="bottom">
+                  <Tooltip title="New" placement="bottom">
                     <Button variant="fab" color="secondary" onClick={this.handleCreateDoc} style={{ marginTop: '1em', backgroundColor: '#00c853' }}>
                       <NoteAddIcon />
                     </Button>
@@ -727,6 +777,50 @@ class DocsDrawer extends React.Component {
                         color="inherit"
                         className={classes.close}
                         onClick={() => this.setState({ signupMsgOpen: false })}
+                      >
+                        <CloseIcon />
+                      </IconButton>,
+                    ]}
+                  />
+                  <Snackbar
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    open={this.state.newdocMsgOpen}
+                    autoHideDuration={5000}
+                    onClose={() => this.setState({ newdocMsgOpen: false })}
+                    message={<span id="message-id">Created New Document!</span>}
+                    action={[
+                      <Button color="secondary" size="small" onClick={() => this.setState({ newdocMsgOpen: false })}>
+                        OK
+                      </Button>,
+                      <IconButton
+                        color="inherit"
+                        className={classes.close}
+                        onClick={() => this.setState({ newdocMsgOpen: false })}
+                      >
+                        <CloseIcon />
+                      </IconButton>,
+                    ]}
+                  />
+                  <Snackbar
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    open={this.state.deleteMsgOpen}
+                    autoHideDuration={5000}
+                    onClose={() => this.setState({ deleteMsgOpen: false })}
+                    message={<span id="message-id">Successfully Deleted Document!</span>}
+                    action={[
+                      <Button color="secondary" size="small" onClick={() => this.setState({ deleteMsgOpen: false })}>
+                        OK
+                      </Button>,
+                      <IconButton
+                        color="inherit"
+                        className={classes.close}
+                        onClick={() => this.setState({ deleteMsgOpen: false })}
                       >
                         <CloseIcon />
                       </IconButton>,
