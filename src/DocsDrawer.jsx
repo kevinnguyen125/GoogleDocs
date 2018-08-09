@@ -4,13 +4,37 @@ import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItemIcon, ListItem, ListItemText,
          Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Slide, ListSubheader,
-         Grid, Paper, Tooltip } from '@material-ui/core/';
+         Grid, Paper, Tooltip, Snackbar } from '@material-ui/core/';
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Menu as MenuIcon, Description as DescriptionIcon,
-         Cancel as CancelIcon, AccountBox as AccountBoxIcon, Save as SaveIcon } from '@material-ui/icons/';
+         Cancel as CancelIcon, AccountBox as AccountBoxIcon, Save as SaveIcon, NoteAdd as NoteAddIcon, Delete as DeleteIcon,
+         Close as CloseIcon } from '@material-ui/icons/';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 import createStyles from 'draft-js-custom-styles';
 import FormatToolbar from './Components/FormatToolbar';
 import { colorPickerPlugin } from './Components/ColorPicker';
+
+function DocsLogo() {
+  return (
+    <IconButton disabled>
+      <img
+        alt="GoogleDocsLogo"
+        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0
+        iMHB4IgogICAgIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIKICAgICB2aWV3Qm94PSIwIDAgNDggNDgiCiAgICAgc3R5bGU9ImZpbGw6Iz
+        AwMDAwMDsiPjxnIGlkPSJzdXJmYWNlMSI+PHBhdGggc3R5bGU9IiBmaWxsOiMyMTk2RjM7IiBkPSJNIDM3IDQ1IEwgMTEgNDUgQyA5L
+        jM0Mzc1IDQ1IDggNDMuNjU2MjUgOCA0MiBMIDggNiBDIDggNC4zNDM3NSA5LjM0Mzc1IDMgMTEgMyBMIDMwIDMgTCA0MCAxMyBMIDQw
+        IDQyIEMgNDAgNDMuNjU2MjUgMzguNjU2MjUgNDUgMzcgNDUgWiAiPjwvcGF0aD48cGF0aCBzdHlsZT0iIGZpbGw6I0JCREVGQjsiIGQ
+        9Ik0gNDAgMTMgTCAzMCAxMyBMIDMwIDMgWiAiPjwvcGF0aD48cGF0aCBzdHlsZT0iIGZpbGw6IzE1NjVDMDsiIGQ9Ik0gMzAgMTMgTC
+        A0MCAyMyBMIDQwIDEzIFogIj48L3BhdGg+PHBhdGggc3R5bGU9IiBmaWxsOiNFM0YyRkQ7IiBkPSJNIDE1IDIzIEwgMzMgMjMgTCAzM
+        yAyNSBMIDE1IDI1IFogIj48L3BhdGg+PHBhdGggc3R5bGU9IiBmaWxsOiNFM0YyRkQ7IiBkPSJNIDE1IDI3IEwgMzMgMjcgTCAzMyAy
+        OSBMIDE1IDI5IFogIj48L3BhdGg+PHBhdGggc3R5bGU9IiBmaWxsOiNFM0YyRkQ7IiBkPSJNIDE1IDMxIEwgMzMgMzEgTCAzMyAzMyB
+        MIDE1IDMzIFogIj48L3BhdGg+PHBhdGggc3R5bGU9IiBmaWxsOiNFM0YyRkQ7IiBkPSJNIDE1IDM1IEwgMjUgMzUgTCAyNSAzNyBMID
+        E1IDM3IFogIj48L3BhdGg+PC9nPjwvc3ZnPg=="
+        height={40}
+        width={40}
+      />
+    </IconButton>
+  );
+}
 
 const getData = (url = '') => {
   // Default options are marked with *
@@ -68,7 +92,7 @@ const patchData = (url = '', data = {}) => {
     .catch(error => console.error('Fetch Error =\n', error));
 };
 
-const drawerWidth = 260;
+const drawerWidth = 300;
 
 const styles = theme => ({
   root: {
@@ -183,6 +207,10 @@ const styles = theme => ({
     marginTop: '1em',
     marginLeft: '1em',
   },
+  close: {
+    width: theme.spacing.unit * 4,
+    height: theme.spacing.unit * 4,
+  },
 });
 
 function TransitionRight(props) {
@@ -213,6 +241,7 @@ class DocsDrawer extends React.Component {
       signupOpen: false,
       docInfoOpen: false,
       isLoggedIn: false,
+      loginMsgOpen: false,
       loginUsername: '',
       loginPassword: '',
       signupUsername: '',
@@ -272,7 +301,7 @@ class DocsDrawer extends React.Component {
     })
     .then((data) => {
       console.log(data);
-      this.setState({ loggedInAs: this.state.loginUsername, currUserId: data.id },
+      this.setState({ loggedInAs: this.state.loginUsername, loginMsgOpen: true, currUserId: data.id },
         () => {
           this.handleLoginClose();
           this.loadDocList();
@@ -296,7 +325,7 @@ class DocsDrawer extends React.Component {
       password: this.state.signupPassword,
       passwordRepeat: this.state.signupPasswordRepeat,
     })
-    .then((data) => { console.log(data); this.handleSignupClose(); })
+    .then((data) => { console.log(data); this.handleSignupClose(); this.setState({ signupMsgOpen: true }); })
     .catch(error => console.error(error));
   }
 
@@ -410,6 +439,7 @@ class DocsDrawer extends React.Component {
         }}
       >
         <div className={classes.drawerHeader}>
+          <Typography variant="title" style={{ marginRight: '1em', fontWeight: 'bold' }}>Documents List</Typography>
           <IconButton onClick={this.handleDrawerClose}>
             <ChevronLeftIcon />
           </IconButton>
@@ -418,6 +448,7 @@ class DocsDrawer extends React.Component {
         {this.state.loggedInAs ? null :
         <Button variant="contained" color="primary" onClick={this.handleLoginOpen} style={{ margin: '5px 10px 5px 10px' }}>
           Login <ChevronRightIcon /></Button>}
+        {this.state.loggedInAs ? null : <Divider />}
         {this.state.loggedInAs ? null :
         <Button variant="contained" color="primary" onClick={this.handleSignupOpen} style={{ margin: '5px 10px 5px 10px' }}>
           Sign Up <AccountBoxIcon /></Button>}
@@ -593,6 +624,7 @@ class DocsDrawer extends React.Component {
                 <MenuIcon />
               </IconButton>
               <Typography variant="title" color="inherit" noWrap>
+                <DocsLogo />
                 Google Docs
               </Typography>
             </Toolbar>
@@ -611,7 +643,7 @@ class DocsDrawer extends React.Component {
 
             <div id="editorContainer" style={{ marginTop: '2em' }}>
               <Grid container justify="center" spacing={8}>
-                <Grid item xs={8}>
+                <Grid item xs={8} style={{ borderBottom: 'black solid 0.05em', marginBottom: '0.5em' }}>
                   <Grid container justify="center">
                     <Typography variant="title" style={{ fontSize: 30 }}>{this.state.documentTitle}</Typography>
                   </Grid>
@@ -634,8 +666,18 @@ class DocsDrawer extends React.Component {
                       blockStyleFn={block => block.getType()}
                     />
                   </Paper>
-                  <Tooltip title="Save" placement="right">
-                    <Button variant="fab" color="primary" onClick={this.handleSaveDoc} style={{ marginTop: '1em' }}>
+                  <Tooltip title="Create" placement="bottom">
+                    <Button variant="fab" color="secondary" onClick={this.handleCreateDoc} style={{ marginTop: '1em', backgroundColor: '#00c853' }}>
+                      <NoteAddIcon />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Delete" placement="bottom">
+                    <Button variant="fab" color="secondary" onClick={this.handleDeleteDoc} style={{ marginTop: '1em', marginLeft: '1em' }}>
+                      <DeleteIcon />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Save" placement="bottom">
+                    <Button variant="fab" color="primary" onClick={this.handleSaveDoc} style={{ marginTop: '1em', marginLeft: '1em' }}>
                       <SaveIcon />
                     </Button>
                   </Tooltip>
@@ -646,6 +688,50 @@ class DocsDrawer extends React.Component {
                     className={classes.setDocInfoButton}
                   >Set Document Information
                   </Button>
+                  <Snackbar
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    open={this.state.loginMsgOpen}
+                    autoHideDuration={5000}
+                    onClose={() => this.setState({ loginMsgOpen: false })}
+                    message={<span id="message-id">Successfully Logged In!</span>}
+                    action={[
+                      <Button color="secondary" size="small" onClick={() => this.setState({ loginMsgOpen: false })}>
+                        OK
+                      </Button>,
+                      <IconButton
+                        color="inherit"
+                        className={classes.close}
+                        onClick={() => this.setState({ loginMsgOpen: false })}
+                      >
+                        <CloseIcon />
+                      </IconButton>,
+                    ]}
+                  />
+                  <Snackbar
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    open={this.state.signupMsgOpen}
+                    autoHideDuration={5000}
+                    onClose={() => this.setState({ signupMsgOpen: false })}
+                    message={<span id="message-id">Successfully Signed Up!</span>}
+                    action={[
+                      <Button color="secondary" size="small" onClick={() => this.setState({ signupMsgOpen: false })}>
+                        OK
+                      </Button>,
+                      <IconButton
+                        color="inherit"
+                        className={classes.close}
+                        onClick={() => this.setState({ signupMsgOpen: false })}
+                      >
+                        <CloseIcon />
+                      </IconButton>,
+                    ]}
+                  />
                 </Grid>
               </Grid>
             </div>
