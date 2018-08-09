@@ -11,7 +11,7 @@ export default (passport) => {
   router.post('/login',
     passport.authenticate('local'),
     (req, res) => {
-      res.json({ success: true });
+      res.json({ id: req.user._id, success: true });
     },
   );
 

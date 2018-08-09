@@ -4,9 +4,9 @@ import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItemIcon, ListItem, ListItemText,
          Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Slide, ListSubheader,
-         Grid, Paper } from '@material-ui/core/';
+         Grid, Paper, Tooltip } from '@material-ui/core/';
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Menu as MenuIcon, Description as DescriptionIcon,
-         Cancel as CancelIcon, AccountBox as AccountBoxIcon } from '@material-ui/icons/';
+         Cancel as CancelIcon, AccountBox as AccountBoxIcon, Save as SaveIcon } from '@material-ui/icons/';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 import FormatToolbar from './Components/FormatToolbar';
 import { colorPickerPlugin } from './Components/ColorPicker';
@@ -48,7 +48,26 @@ const postData = (url = '', data = {}) => {
     .catch(error => console.error('Fetch Error =\n', error));
 };
 
-const drawerWidth = 240;
+const patchData = (url = '', data = {}) => {
+  // Default options are marked with *
+  return fetch(url, {
+    method: 'PATCH', // *GET, POST, PUT, DELETE, etc.
+    mode: 'cors', // no-cors, cors, *same-origin
+    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+    credentials: 'same-origin', // include, same-origin, *omit
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+            // "Content-Type": "application/x-www-form-urlencoded",
+    },
+    redirect: 'follow', // manual, *follow, error
+    referrer: 'no-referrer', // no-referrer, *client
+    body: JSON.stringify(data), // body data type must match "Content-Type" header
+  })
+    .then(response => response.json()) // parses response to JSON
+    .catch(error => console.error('Fetch Error =\n', error));
+};
+
+const drawerWidth = 260;
 
 const styles = theme => ({
   root: {
@@ -159,10 +178,18 @@ const styles = theme => ({
     margin: '0.2em',
     minWidth: 10,
   },
+  setDocInfoButton: {
+    marginTop: '1em',
+    marginLeft: '1em',
+  },
 });
 
-function Transition(props) {
+function TransitionRight(props) {
   return <Slide direction="right" {...props} />;
+}
+
+function TransitionUp(props) {
+  return <Slide direction="up" {...props} />;
 }
 
 class DocsDrawer extends React.Component {
@@ -172,6 +199,7 @@ class DocsDrawer extends React.Component {
       drawerOpen: false,
       loginOpen: false,
       signupOpen: false,
+      docInfoOpen: false,
       isLoggedIn: false,
       loginUsername: '',
       loginPassword: '',
@@ -179,6 +207,10 @@ class DocsDrawer extends React.Component {
       signupPassword: '',
       signupPasswordRepeat: '',
       loggedInAs: '',
+      currUserId: '',
+      documentTitle: 'Untitled (Not Saved)',
+      documentPassword: '',
+      documentId: '',
       editorFocused: null,
       editorState: EditorState.createEmpty(),
       documents: [],
@@ -193,12 +225,6 @@ class DocsDrawer extends React.Component {
 
   componentDidMount() {
     // if (localStorage.getItem('LoggedIn'))
-    getData('http://192.168.7.132:8080/getDocuments')
-    .then((data) => {
-      console.log('Got Documents Owned by User!');
-      this.setState({ documents: data });
-    })
-    .catch(error => console.error(error));
   }
 
   componentDidUpdate() {
@@ -227,7 +253,15 @@ class DocsDrawer extends React.Component {
       username: this.state.loginUsername,
       password: this.state.loginPassword,
     })
-    .then((data) => { console.log(data); this.setState({ loggedInAs: this.state.loginUsername }, this.handleLoginClose); })
+    .then((data) => {
+      console.log(data);
+      this.setState({ loggedInAs: this.state.loginUsername, currUserId: data.id },
+        () => {
+          this.handleLoginClose();
+          this.loadDocList();
+        },
+      );
+    })
     .catch(error => console.error(error));
   };
 
@@ -258,8 +292,50 @@ class DocsDrawer extends React.Component {
     .catch(error => console.error(error));
   }
 
+  loadDocList = () => {
+    getData('http://192.168.7.132:8080/getDocuments')
+      .then((data) => {
+        this.setState({
+          documents: data,
+        });
+      })
+      .catch(err => console.log(err));
+  }
+
   handleLoadDoc = (id) => {
     console.log('ID:', id);
+    getData(`http://192.168.7.132:8080/api/v1/Document/${id}`)
+      .then(({ content, title, password, _id }) => {
+        this.setState({
+          documentId: _id,
+          documentTitle: title,
+          documentPassword: password,
+          editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(content))),
+        });
+      })
+      .catch(err => console.log(err));
+  }
+
+  handleSaveDoc = () => {
+    if (!this.state.documentId) {
+      postData('http://192.168.7.132:8080/api/v1/Document', {
+        owner: this.state.currUserId,
+        title: this.state.documentTitle,
+        password: this.state.documentPassword,
+        content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
+        collaborators: [],
+      })
+      .then((data) => { console.log(data); this.setState({ documentId: data._id }); })
+      .catch(error => console.error(error));
+    } else {
+      patchData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`, {
+        title: this.state.documentTitle,
+        password: this.state.documentPassword,
+        content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
+      })
+      .then(data => console.log(data))
+      .catch(error => console.error(error));
+    }
   }
 
   onBoldClick = (e) => {
@@ -296,11 +372,14 @@ class DocsDrawer extends React.Component {
         </div>
         <Divider />
         {this.state.loggedInAs ? null :
-        <Button variant="contained" color="primary" onClick={this.handleLoginOpen} style={{ marginBottom: 4 }}>Login <ChevronRightIcon /></Button>}
+        <Button variant="contained" color="primary" onClick={this.handleLoginOpen} style={{ margin: '5px 10px 5px 10px' }}>
+          Login <ChevronRightIcon /></Button>}
         {this.state.loggedInAs ? null :
-        <Button variant="contained" color="primary" onClick={this.handleSignupOpen}>Sign Up <AccountBoxIcon /></Button>}
+        <Button variant="contained" color="primary" onClick={this.handleSignupOpen} style={{ margin: '5px 10px 5px 10px' }}>
+          Sign Up <AccountBoxIcon /></Button>}
         {this.state.loggedInAs ?
-          <Button variant="contained" color="secondary" onClick={this.handleLogoutSubmit}>Logout <AccountBoxIcon /></Button> : null}
+          <Button variant="contained" color="secondary" onClick={this.handleLogoutSubmit} style={{ margin: '5px 10px 5px 10px' }}>
+            Logout <AccountBoxIcon /></Button> : null}
         <Divider />
         <List subheader={<div><ListSubheader>{this.state.loggedInAs ? `Logged In As: ${this.state.loggedInAs}` : 'Not Logged In.'}</ListSubheader>
           <Divider /><ListSubheader>Your Documents</ListSubheader><Divider /></div>}
@@ -323,7 +402,7 @@ class DocsDrawer extends React.Component {
 
     const loginDialog = (
       <Dialog
-        TransitionComponent={Transition}
+        TransitionComponent={TransitionRight}
         open={this.state.loginOpen}
         onClose={this.handleLoginClose}
       >
@@ -362,7 +441,7 @@ class DocsDrawer extends React.Component {
 
     const signupDialog = (
       <Dialog
-        TransitionComponent={Transition}
+        TransitionComponent={TransitionRight}
         open={this.state.signupOpen}
         onClose={this.handleSignupClose}
       >
@@ -407,6 +486,40 @@ class DocsDrawer extends React.Component {
       </Dialog>
     );
 
+    const docInfoDialog = (
+      <Dialog
+        TransitionComponent={TransitionUp}
+        open={this.state.docInfoOpen}
+      >
+        <DialogTitle>Document Information</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Edit the following fields and press the save button to save.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            fullWidth
+            margin="normal"
+            label="Document Title"
+            value={this.state.documentTitle}
+            onChange={e => this.setState({ documentTitle: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Document Password"
+            value={this.state.documentPassword}
+            onChange={e => this.setState({ documentPassword: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => this.setState({ docInfoOpen: false })} color="primary">
+            Done <ChevronRightIcon />
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+
     const clickHandlers = {
       bold: this.onBoldClick,
       italic: this.onItalicClick,
@@ -438,6 +551,7 @@ class DocsDrawer extends React.Component {
           {drawer}
           {loginDialog}
           {signupDialog}
+          {docInfoDialog}
           <main
             className={classNames(classes.content, classes['content-left'], {
               [classes.contentShift]: drawerOpen,
@@ -446,8 +560,13 @@ class DocsDrawer extends React.Component {
           >
             <div className={classes.drawerHeader} />
 
-            <div id="editorContainer" style={{ marginTop: 30 }}>
+            <div id="editorContainer" style={{ marginTop: '2em' }}>
               <Grid container justify="center" spacing={8}>
+                <Grid item xs={8}>
+                  <Grid container justify="center">
+                    <Typography variant="title" style={{ fontSize: 30 }}>{this.state.documentTitle}</Typography>
+                  </Grid>
+                </Grid>
                 <FormatToolbar clickHandlers={clickHandlers} updateES={this.updateEditorState} getES={this.getEditorState} picker={this.picker} />
                 <Grid item xs={8}>
                   <Paper
@@ -464,7 +583,18 @@ class DocsDrawer extends React.Component {
                       customStyleFn={this.picker.customStyleFn}
                     />
                   </Paper>
-                  <Button variant="raised" color="primary">Save</Button>
+                  <Tooltip title="Save" placement="right">
+                    <Button variant="fab" color="primary" onClick={this.handleSaveDoc} style={{ marginTop: '1em' }}>
+                      <SaveIcon />
+                    </Button>
+                  </Tooltip>
+                  <Button
+                    variant="raised"
+                    color="primary"
+                    onClick={() => this.setState({ docInfoOpen: true })}
+                    className={classes.setDocInfoButton}
+                  >Set Document Information
+                  </Button>
                 </Grid>
               </Grid>
             </div>
