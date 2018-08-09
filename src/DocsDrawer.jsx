@@ -325,7 +325,7 @@ class DocsDrawer extends React.Component {
         content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
         collaborators: [],
       })
-      .then((data) => { console.log(data); this.setState({ documentId: data._id }); })
+      .then((data) => { console.log(data); this.setState({ documentId: data._id }, this.loadDocList); })
       .catch(error => console.error(error));
     } else {
       patchData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`, {
@@ -382,7 +382,7 @@ class DocsDrawer extends React.Component {
             Logout <AccountBoxIcon /></Button> : null}
         <Divider />
         <List subheader={<div><ListSubheader>{this.state.loggedInAs ? `Logged In As: ${this.state.loggedInAs}` : 'Not Logged In.'}</ListSubheader>
-          <Divider /><ListSubheader>Your Documents</ListSubheader><Divider /></div>}
+          <Divider /><ListSubheader>Your Documents ({this.state.documents.length})</ListSubheader><Divider /></div>}
         >
           <div style={{ maxHeight: 300, overflow: 'auto' }}>
             {this.state.documents.map((doc) => {
