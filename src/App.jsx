@@ -69,7 +69,7 @@ const postData = (url = '', data = {}) => {
     referrer: 'no-referrer', // no-referrer, *client
     body: JSON.stringify(data), // body data type must match "Content-Type" header
   })
-    .then(response => response.json()) // parses response to JSON
+    .then(response => (response.status !== 401 ? response.json() : 401)) // parses response to JSON
     .catch(error => console.error('Fetch Error =\n', error));
 };
 
@@ -253,14 +253,12 @@ class App extends React.Component {
       loginOpen: false,
       signupOpen: false,
       docInfoOpen: false,
+      invalidLogin: false,
       isLoggedIn: false,
-      loginMsgOpen: false,
-      signupMsgOpen: false,
-      logoutMsgOpen: false,
-      deleteMsgOpen: false,
-      newdocMsgOpen: false,
+      notifyMsgOpen: false,
       documentsLoading: false,
       initialDocsLoad: false,
+      notifyMsg: '',
       loginUsername: '',
       loginPassword: '',
       signupUsername: '',
@@ -275,6 +273,7 @@ class App extends React.Component {
       editorState: EditorState.createEmpty(),
       editorFontSize: 16,
       documents: [],
+      sharedDocuments: [],
     };
     this.setDomEditorRef = (ref) => {
       this.domEditor = ref;
@@ -292,7 +291,7 @@ class App extends React.Component {
   }
 
   handleLoginClose = () => {
-    this.setState({ loginOpen: false, loginUsername: '', loginPassword: '' });
+    this.setState({ loginOpen: false, loginUsername: '', loginPassword: '', invalidLogin: false });
   };
 
   handleLoginSubmit = () => {
@@ -301,13 +300,12 @@ class App extends React.Component {
       password: this.state.loginPassword,
     })
     .then((data) => {
-      console.log(data);
-      this.setState({ loggedInAs: this.state.loginUsername, loginMsgOpen: true, currUserId: data.id },
-        () => {
-          this.handleLoginClose();
-          this.loadDocList();
-        },
-      );
+      if (data !== 401) {
+        this.setState({ loggedInAs: this.state.loginUsername, currUserId: data.id, notifyMsgOpen: true, notifyMsg: 'Successfully Logged In!' },
+          () => { this.handleLoginClose(); this.loadDocList(); });
+      } else {
+        this.setState({ invalidLogin: true });
+      }
     })
     .catch(error => console.error(error));
   };
@@ -322,7 +320,7 @@ class App extends React.Component {
       password: this.state.signupPassword,
       passwordRepeat: this.state.signupPasswordRepeat,
     })
-    .then((data) => { console.log(data); this.handleSignupClose(); this.setState({ signupMsgOpen: true }); })
+    .then((data) => { console.log(data); this.handleSignupClose(); this.setState({ notifyMsgOpen: true, notifyMsg: 'Succesfully signed up!' }); })
     .catch(error => console.error(error));
   }
 
@@ -338,7 +336,8 @@ class App extends React.Component {
         documentId: '',
         editorState: EditorState.createEmpty(),
         initialDocsLoad: false,
-        logoutMsgOpen: true,
+        notifyMsgOpen: true,
+        notifyMsg: 'Successfully logged out!',
       });
     })
     .catch(error => console.error(error));
@@ -392,7 +391,14 @@ class App extends React.Component {
   }
 
   handleNewDoc = () => {
-    this.setState({ documentTitle: 'Untitled (Not Saved)', documentPassword: '', documentId: '', editorState: EditorState.createEmpty(), newdocMsgOpen: true });
+    this.setState({
+      documentTitle: 'Untitled (Not Saved)',
+      documentPassword: '',
+      documentId: '',
+      editorState: EditorState.createEmpty(),
+      notifyMsgOpen: true,
+      notifyMsg: 'Successfully created new document!',
+    });
   }
 
   handleDeleteDoc = () => {
@@ -405,7 +411,8 @@ class App extends React.Component {
             documentPassword: '',
             documentId: '',
             editorState: EditorState.createEmpty(),
-            deleteMsgOpen: true,
+            notifyMsgOpen: true,
+            notifyMsg: 'Successfully deleted document!',
             documents: this.state.documents.filter(d => d._id !== this.state.documentId),
           });
         })
@@ -496,12 +503,13 @@ class App extends React.Component {
           <Button variant="contained" color="secondary" onClick={this.handleLogoutSubmit} style={{ margin: '5px 10px 5px 10px' }}>
             Logout <AccountBoxIcon /></Button> : null}
         <Divider />
-        <List subheader={<div><ListSubheader>{this.state.loggedInAs ? `Logged In As: ${this.state.loggedInAs}` : 'Not Logged In.'}</ListSubheader>
-          <Divider /><ListSubheader>Your Documents ({this.state.documents.length})</ListSubheader><Divider /></div>}
+        <List subheader={<div><ListSubheader style={{ fontSize: 16, color: 'black', borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
+          {this.state.loggedInAs ? `Logged In As: ${this.state.loggedInAs}` : 'Not Logged In.'}</ListSubheader>
+          <ListSubheader style={{ fontSize: 16 }}>Your Documents ({this.state.documents.length})</ListSubheader><Divider /></div>}
         >
-          <div style={{ maxHeight: 300, overflow: 'auto' }}>
+          <div style={{ height: 310, overflow: 'auto', borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
             { this.state.documentsLoading ?
-              <CircularProgress size={50} style={{ color: '#00b0ff', marginLeft: '7.5em', marginTop: '3em' }} /> :
+              <CircularProgress size={50} style={{ color: '#00b0ff', marginLeft: '7.5em', marginTop: '7.5em', marginBottom: '1em' }} /> :
             this.state.documents.map((doc) => {
               return (
                 <ListItem key={doc._id} button onClick={() => this.handleLoadDoc(doc._id)}>
@@ -512,6 +520,16 @@ class App extends React.Component {
                 </ListItem>
               );
             })}
+          </div>
+        </List>
+        <List subheader={<div><ListSubheader style={{ fontSize: 16 }}>Documents Shared to You ({this.state.sharedDocuments.length})</ListSubheader><Divider /></div>}>
+          <div style={{ maxHeight: 310, overflow: 'auto', borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
+            <ListItem>
+              <ListItemIcon>
+                <DescriptionIcon />
+              </ListItemIcon>
+              <ListItemText primary="Work in Progress" />
+            </ListItem>
           </div>
         </List>
       </Drawer>
@@ -528,6 +546,9 @@ class App extends React.Component {
           <DialogContentText>
             Please login to view and edit your documents.
           </DialogContentText>
+          {this.state.invalidLogin ? <DialogContentText style={{ color: 'red' }}>
+            Invalid username or password.
+          </DialogContentText> : null}
           <TextField
             autoFocus
             fullWidth
@@ -740,117 +761,25 @@ class App extends React.Component {
                   >Set Document Information
                   </Button>
                   <Snackbar
-                    key="login"
                     anchorOrigin={{
                       vertical: 'bottom',
                       horizontal: 'right',
                     }}
-                    open={this.state.loginMsgOpen}
+                    open={this.state.notifyMsgOpen}
                     autoHideDuration={5000}
-                    onClose={() => this.setState({ loginMsgOpen: false })}
-                    message={<span id="message-id">Successfully Logged In!</span>}
+                    onClose={() => this.setState({ notifyMsgOpen: false, notifyMsg: '' })}
+                    message={<span>{this.state.notifyMsg}</span>}
                     action={[
-                      <Button color="secondary" size="small" onClick={() => this.setState({ loginMsgOpen: false })}>
+                      <Button key="ok" color="secondary" size="small" onClick={() => this.setState({ notifyMsgOpen: false, notifyMsg: '' })}>
                         OK
                       </Button>,
                       <IconButton
+                        key="close"
                         color="inherit"
                         className={classes.close}
-                        onClick={() => this.setState({ loginMsgOpen: false })}
+                        onClick={() => this.setState({ notifyMsgOpen: false, notifyMsg: '' })}
                       >
-                        <CloseIcon />
-                      </IconButton>,
-                    ]}
-                  />
-                  <Snackbar
-                    key="signup"
-                    anchorOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'right',
-                    }}
-                    open={this.state.signupMsgOpen}
-                    autoHideDuration={5000}
-                    onClose={() => this.setState({ signupMsgOpen: false })}
-                    message={<span id="message-id">Successfully Signed Up!</span>}
-                    action={[
-                      <Button color="secondary" size="small" onClick={() => this.setState({ signupMsgOpen: false })}>
-                        OK
-                      </Button>,
-                      <IconButton
-                        color="inherit"
-                        className={classes.close}
-                        onClick={() => this.setState({ signupMsgOpen: false })}
-                      >
-                        <CloseIcon />
-                      </IconButton>,
-                    ]}
-                  />
-                  <Snackbar
-                    key="newdoc"
-                    anchorOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'right',
-                    }}
-                    open={this.state.newdocMsgOpen}
-                    autoHideDuration={5000}
-                    onClose={() => this.setState({ newdocMsgOpen: false })}
-                    message={<span id="message-id">Created New Document!</span>}
-                    action={[
-                      <Button color="secondary" size="small" onClick={() => this.setState({ newdocMsgOpen: false })}>
-                        OK
-                      </Button>,
-                      <IconButton
-                        color="inherit"
-                        className={classes.close}
-                        onClick={() => this.setState({ newdocMsgOpen: false })}
-                      >
-                        <CloseIcon />
-                      </IconButton>,
-                    ]}
-                  />
-                  <Snackbar
-                    key="delete"
-                    anchorOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'right',
-                    }}
-                    open={this.state.deleteMsgOpen}
-                    autoHideDuration={5000}
-                    onClose={() => this.setState({ deleteMsgOpen: false })}
-                    message={<span id="message-id">Successfully Deleted Document!</span>}
-                    action={[
-                      <Button color="secondary" size="small" onClick={() => this.setState({ deleteMsgOpen: false })}>
-                        OK
-                      </Button>,
-                      <IconButton
-                        color="inherit"
-                        className={classes.close}
-                        onClick={() => this.setState({ deleteMsgOpen: false })}
-                      >
-                        <CloseIcon />
-                      </IconButton>,
-                    ]}
-                  />
-                  <Snackbar
-                    key="logout"
-                    anchorOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'right',
-                    }}
-                    open={this.state.logoutMsgOpen}
-                    autoHideDuration={5000}
-                    onClose={() => this.setState({ logoutMsgOpen: false })}
-                    message={<span id="message-id">Successfully Logged Out!</span>}
-                    action={[
-                      <Button color="secondary" size="small" onClick={() => this.setState({ logoutMsgOpen: false })}>
-                        OK
-                      </Button>,
-                      <IconButton
-                        color="inherit"
-                        className={classes.close}
-                        onClick={() => this.setState({ logoutMsgOpen: false })}
-                      >
-                        <CloseIcon />
+                        <CloseIcon key="closeIcon" />
                       </IconButton>,
                     ]}
                   />
