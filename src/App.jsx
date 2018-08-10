@@ -493,11 +493,11 @@ class App extends React.Component {
         </div>
         <Divider />
         {this.state.loggedInAs ? null :
-        <Button variant="contained" color="primary" onClick={() => this.setState({ loginOpen: true })} style={{ margin: '5px 10px 5px 10px' }}>
+        <Button variant="contained" color="primary" onClick={() => this.setState({ loginOpen: true })} style={{ margin: '5px 10px 5px 10px', backgroundColor: '#00c853' }}>
           Login <ChevronRightIcon /></Button>}
         {this.state.loggedInAs ? null : <Divider />}
         {this.state.loggedInAs ? null :
-        <Button variant="contained" color="primary" onClick={() => this.setState({ signupOpen: true })} style={{ margin: '5px 10px 5px 10px' }}>
+        <Button variant="contained" color="secondary" onClick={() => this.setState({ signupOpen: true })} style={{ margin: '5px 10px 5px 10px' }}>
           Sign Up <AccountBoxIcon /></Button>}
         {this.state.loggedInAs ?
           <Button variant="contained" color="secondary" onClick={this.handleLogoutSubmit} style={{ margin: '5px 10px 5px 10px' }}>
@@ -522,7 +522,9 @@ class App extends React.Component {
             })}
           </div>
         </List>
-        <List subheader={<div><ListSubheader style={{ fontSize: 16 }}>Documents Shared to You ({this.state.sharedDocuments.length})</ListSubheader><Divider /></div>}>
+        <List subheader={<div><ListSubheader style={{ fontSize: 16, borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
+          Documents Shared to You ({this.state.sharedDocuments.length})</ListSubheader></div>}
+        >
           <div style={{ maxHeight: 310, overflow: 'auto', borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
             <ListItem>
               <ListItemIcon>
@@ -738,17 +740,17 @@ class App extends React.Component {
                       blockStyleFn={block => block.getType()}
                     />
                   </Paper>
-                  <Tooltip title="New" placement="bottom">
+                  <Tooltip title="New" placement="bottom" enterDelay={400} leaveDelay={200}>
                     <Button variant="fab" color="secondary" onClick={this.handleNewDoc} style={{ marginTop: '1em', backgroundColor: '#00c853' }}>
                       <NoteAddIcon />
                     </Button>
                   </Tooltip>
-                  <Tooltip title="Delete" placement="bottom">
+                  <Tooltip title="Delete" placement="bottom" enterDelay={400} leaveDelay={200}>
                     <Button variant="fab" color="secondary" onClick={this.handleDeleteDoc} style={{ marginTop: '1em', marginLeft: '1em' }}>
                       <DeleteIcon />
                     </Button>
                   </Tooltip>
-                  <Tooltip title="Save" placement="bottom">
+                  <Tooltip title="Save" placement="bottom" enterDelay={400} leaveDelay={200}>
                     <Button variant="fab" color="primary" onClick={this.handleSaveDoc} style={{ marginTop: '1em', marginLeft: '1em' }}>
                       <SaveIcon />
                     </Button>
