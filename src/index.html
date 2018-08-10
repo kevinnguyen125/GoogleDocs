@@ -11,16 +11,14 @@
 <script type="text/jsx">
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AppContainer} from 'react-hot-loader';
+import { AppContainer } from 'react-hot-loader';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles/';
 
 const theme = createMuiTheme();
 
 const render = () => {
-  //const App = require('./app').default;
-  const DocsDrawer = require('./DocsDrawer').default;
-  ReactDOM.render(<AppContainer><MuiThemeProvider theme={theme}><DocsDrawer /></MuiThemeProvider></AppContainer>, document.getElementById('App'));
-  //ReactDOM.render(<AppContainer><MuiThemeProvider theme={theme}><App /></MuiThemeProvider></AppContainer>, document.getElementById('App'));
+  const App = require('./App').default;
+  ReactDOM.render(<AppContainer><MuiThemeProvider theme={theme}><App /></MuiThemeProvider></AppContainer>, document.getElementById('App'));
 }
 
 render();

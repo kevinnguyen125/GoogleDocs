@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItemIcon, ListItem, ListItemText,
          Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Slide, ListSubheader,
-         Grid, Paper, Tooltip, Snackbar } from '@material-ui/core/';
+         Grid, Paper, Tooltip, Snackbar, CircularProgress } from '@material-ui/core/';
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Menu as MenuIcon, Description as DescriptionIcon,
          Cancel as CancelIcon, AccountBox as AccountBoxIcon, Save as SaveIcon, NoteAdd as NoteAddIcon, Delete as DeleteIcon,
          Close as CloseIcon } from '@material-ui/icons/';
@@ -243,11 +243,9 @@ const customStyleMap = {}; // Don't need anymore if not doing anything fancy!
 // this.updateEditorState(RichUtils.toggleInlineStyle(this.state.editorState, `text${size}`));
 
 /* draft-js-custom-styles builds functions for toggling css properties */
-const styleReturn = createStyles(['font-size', 'color', 'background-color'], customStyleMap);
-const formatStyles = styleReturn.styles;
-const altCustomStyleFn = styleReturn.customStyleFn;
+const { styles: formatStyles, customStyleFn: editorCustomStyleFn } = createStyles(['font-size', 'color', 'background-color'], customStyleMap);
 
-class DocsDrawer extends React.Component {
+class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -258,8 +256,11 @@ class DocsDrawer extends React.Component {
       isLoggedIn: false,
       loginMsgOpen: false,
       signupMsgOpen: false,
+      logoutMsgOpen: false,
       deleteMsgOpen: false,
       newdocMsgOpen: false,
+      documentsLoading: false,
+      initialDocsLoad: false,
       loginUsername: '',
       loginPassword: '',
       signupUsername: '',
@@ -272,6 +273,7 @@ class DocsDrawer extends React.Component {
       documentId: '',
       editorFocused: null,
       editorState: EditorState.createEmpty(),
+      editorFontSize: 16,
       documents: [],
     };
     this.setDomEditorRef = (ref) => {
@@ -280,38 +282,21 @@ class DocsDrawer extends React.Component {
     this.updateEditorState = editorState => this.setState({ editorState });
     this.getEditorState = () => this.state.editorState;
     this.picker = colorPickerPlugin(this.updateEditorState, this.getEditorState);
-    this.joinedCustomStyleFn = (...x) => {
-      return altCustomStyleFn(...x) || this.picker.customStyleFn(...x);
+    this.joinedCustomStyleFn = (x) => {
+      return editorCustomStyleFn(x) || this.picker.customStyleFn(x);
     };
-  }
-
-  componentDidMount() {
-    // if (localStorage.getItem('LoggedIn'))
   }
 
   componentDidUpdate() {
     console.count('DID UPDATE');
   }
 
-  handleDrawerOpen = () => {
-    this.setState({ drawerOpen: true });
-  };
-
-  handleDrawerClose = () => {
-    this.setState({ drawerOpen: false });
-  };
-
-  handleLoginOpen = () => {
-    this.setState({ loginOpen: true });
-  };
-
   handleLoginClose = () => {
     this.setState({ loginOpen: false, loginUsername: '', loginPassword: '' });
   };
 
   handleLoginSubmit = () => {
-    // localStorage.setItem('LoggedIn', true);
-    postData('http://192.168.7.132:8080/login', {
+    postData('http://172.16.1.178:8080/login', {
       username: this.state.loginUsername,
       password: this.state.loginPassword,
     })
@@ -327,16 +312,12 @@ class DocsDrawer extends React.Component {
     .catch(error => console.error(error));
   };
 
-  handleSignupOpen = () => {
-    this.setState({ signupOpen: true });
-  };
-
   handleSignupClose = () => {
     this.setState({ signupOpen: false, signupUsername: '', signupPassword: '', signupPasswordRepeat: '' });
   };
 
   handleSignupSubmit = () => {
-    postData('http://192.168.7.132:8080/signup', {
+    postData('http://172.16.1.178:8080/signup', {
       username: this.state.signupUsername,
       password: this.state.signupPassword,
       passwordRepeat: this.state.signupPasswordRepeat,
@@ -346,27 +327,37 @@ class DocsDrawer extends React.Component {
   }
 
   handleLogoutSubmit = () => {
-    getData('http://192.168.7.132:8080/logout')
-    .then((data) => {
-      console.log(data);
-      this.setState({ loggedInAs: false, documents: [] });
+    getData('http://172.16.1.178:8080/logout')
+    .then(() => {
+      this.setState({
+        loggedInAs: false,
+        currUserId: '',
+        documents: [],
+        documentTitle: 'Untitled (Not Saved)',
+        documentPassword: '',
+        documentId: '',
+        editorState: EditorState.createEmpty(),
+        initialDocsLoad: false,
+        logoutMsgOpen: true,
+      });
     })
     .catch(error => console.error(error));
   }
 
   loadDocList = () => {
-    getData('http://192.168.7.132:8080/getDocuments')
-      .then((data) => {
-        this.setState({
-          documents: data,
-        });
+    if (!this.state.initialDocsLoad) {
+      this.setState({ documentsLoading: true, initialDocsLoad: true });
+    }
+    getData('http://172.16.1.178:8080/getDocuments')
+      .then((docs) => {
+        setTimeout(() => this.setState({ documents: docs, documentsLoading: false }), this.state.documentsLoading ? 3000 : 0);
       })
       .catch(err => console.log(err));
   }
 
   handleLoadDoc = (id) => {
     console.log('ID:', id);
-    getData(`http://192.168.7.132:8080/api/v1/Document/${id}`)
+    getData(`http://172.16.1.178:8080/api/v1/Document/${id}`)
       .then(({ content, title, password, _id }) => {
         this.setState({
           documentId: _id,
@@ -380,7 +371,7 @@ class DocsDrawer extends React.Component {
 
   handleSaveDoc = () => {
     if (!this.state.documentId) {
-      postData('http://192.168.7.132:8080/api/v1/Document', {
+      postData('http://172.16.1.178:8080/api/v1/Document', {
         owner: this.state.currUserId,
         title: this.state.documentTitle,
         password: this.state.documentPassword,
@@ -390,7 +381,7 @@ class DocsDrawer extends React.Component {
       .then((data) => { console.log(data); this.setState({ documentId: data._id }, this.loadDocList); })
       .catch(error => console.error(error));
     } else {
-      patchData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`, {
+      patchData(`http://172.16.1.178:8080/api/v1/Document/${this.state.documentId}`, {
         title: this.state.documentTitle,
         password: this.state.documentPassword,
         content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
@@ -400,13 +391,13 @@ class DocsDrawer extends React.Component {
     }
   }
 
-  handleCreateDoc = () => {
+  handleNewDoc = () => {
     this.setState({ documentTitle: 'Untitled (Not Saved)', documentPassword: '', documentId: '', editorState: EditorState.createEmpty(), newdocMsgOpen: true });
   }
 
   handleDeleteDoc = () => {
     if (this.state.documentId) {
-      deleteData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`)
+      deleteData(`http://172.16.1.178:8080/api/v1/Document/${this.state.documentId}`)
         .then((data) => {
           console.log(data);
           this.setState({
@@ -459,8 +450,9 @@ class DocsDrawer extends React.Component {
 
   onFontSizeClick = (e) => {
     e.preventDefault();
-    const size = Number(e.target.getAttribute('data-value'));
-    this.updateEditorState(formatStyles.fontSize.toggle(this.state.editorState, `${size}px`));
+    const fontSize = Number(e.target.getAttribute('data-value'));
+    this.updateEditorState(formatStyles.fontSize.toggle(this.state.editorState, `${fontSize}px`));
+    this.setState({ editorFontSize: fontSize });
   }
 
   onBulletPointClick = (e) => {
@@ -488,17 +480,17 @@ class DocsDrawer extends React.Component {
       >
         <div className={classes.drawerHeader}>
           <Typography variant="title" style={{ marginRight: '1em', fontWeight: 'bold' }}>Documents List</Typography>
-          <IconButton onClick={this.handleDrawerClose}>
+          <IconButton onClick={() => this.setState({ drawerOpen: false })}>
             <ChevronLeftIcon />
           </IconButton>
         </div>
         <Divider />
         {this.state.loggedInAs ? null :
-        <Button variant="contained" color="primary" onClick={this.handleLoginOpen} style={{ margin: '5px 10px 5px 10px' }}>
+        <Button variant="contained" color="primary" onClick={() => this.setState({ loginOpen: true })} style={{ margin: '5px 10px 5px 10px' }}>
           Login <ChevronRightIcon /></Button>}
         {this.state.loggedInAs ? null : <Divider />}
         {this.state.loggedInAs ? null :
-        <Button variant="contained" color="primary" onClick={this.handleSignupOpen} style={{ margin: '5px 10px 5px 10px' }}>
+        <Button variant="contained" color="primary" onClick={() => this.setState({ signupOpen: true })} style={{ margin: '5px 10px 5px 10px' }}>
           Sign Up <AccountBoxIcon /></Button>}
         {this.state.loggedInAs ?
           <Button variant="contained" color="secondary" onClick={this.handleLogoutSubmit} style={{ margin: '5px 10px 5px 10px' }}>
@@ -508,7 +500,9 @@ class DocsDrawer extends React.Component {
           <Divider /><ListSubheader>Your Documents ({this.state.documents.length})</ListSubheader><Divider /></div>}
         >
           <div style={{ maxHeight: 300, overflow: 'auto' }}>
-            {this.state.documents.map((doc) => {
+            { this.state.documentsLoading ?
+              <CircularProgress size={50} style={{ color: '#00b0ff', marginLeft: '7.5em', marginTop: '3em' }} /> :
+            this.state.documents.map((doc) => {
               return (
                 <ListItem key={doc._id} button onClick={() => this.handleLoadDoc(doc._id)}>
                   <ListItemIcon>
@@ -668,7 +662,7 @@ class DocsDrawer extends React.Component {
             <Toolbar disableGutters={!drawerOpen}>
               <IconButton
                 color="inherit"
-                onClick={this.handleDrawerOpen}
+                onClick={() => this.setState({ drawerOpen: true })}
                 className={classNames(classes.menuButton, drawerOpen && classes.hide)}
               >
                 <MenuIcon />
@@ -698,7 +692,14 @@ class DocsDrawer extends React.Component {
                     <Typography variant="title" style={{ fontSize: 30 }}>{this.state.documentTitle}</Typography>
                   </Grid>
                 </Grid>
-                <FormatToolbar clickHandlers={clickHandlers} updateES={this.updateEditorState} getES={this.getEditorState} picker={this.picker} f={() => setTimeout(this.domEditor.focus, 0)} />
+                <FormatToolbar
+                  clickHandlers={clickHandlers}
+                  updateES={this.updateEditorState}
+                  getES={this.getEditorState}
+                  picker={this.picker}
+                  focus={() => setTimeout(this.domEditor.focus, 0)}
+                  currFontSize={this.state.editorFontSize}
+                />
                 <Grid item xs={8}>
                   <Paper
                     elevation={5}
@@ -717,7 +718,7 @@ class DocsDrawer extends React.Component {
                     />
                   </Paper>
                   <Tooltip title="New" placement="bottom">
-                    <Button variant="fab" color="secondary" onClick={this.handleCreateDoc} style={{ marginTop: '1em', backgroundColor: '#00c853' }}>
+                    <Button variant="fab" color="secondary" onClick={this.handleNewDoc} style={{ marginTop: '1em', backgroundColor: '#00c853' }}>
                       <NoteAddIcon />
                     </Button>
                   </Tooltip>
@@ -739,6 +740,7 @@ class DocsDrawer extends React.Component {
                   >Set Document Information
                   </Button>
                   <Snackbar
+                    key="login"
                     anchorOrigin={{
                       vertical: 'bottom',
                       horizontal: 'right',
@@ -761,6 +763,7 @@ class DocsDrawer extends React.Component {
                     ]}
                   />
                   <Snackbar
+                    key="signup"
                     anchorOrigin={{
                       vertical: 'bottom',
                       horizontal: 'right',
@@ -783,6 +786,7 @@ class DocsDrawer extends React.Component {
                     ]}
                   />
                   <Snackbar
+                    key="newdoc"
                     anchorOrigin={{
                       vertical: 'bottom',
                       horizontal: 'right',
@@ -805,6 +809,7 @@ class DocsDrawer extends React.Component {
                     ]}
                   />
                   <Snackbar
+                    key="delete"
                     anchorOrigin={{
                       vertical: 'bottom',
                       horizontal: 'right',
@@ -826,6 +831,29 @@ class DocsDrawer extends React.Component {
                       </IconButton>,
                     ]}
                   />
+                  <Snackbar
+                    key="logout"
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    open={this.state.logoutMsgOpen}
+                    autoHideDuration={5000}
+                    onClose={() => this.setState({ logoutMsgOpen: false })}
+                    message={<span id="message-id">Successfully Logged Out!</span>}
+                    action={[
+                      <Button color="secondary" size="small" onClick={() => this.setState({ logoutMsgOpen: false })}>
+                        OK
+                      </Button>,
+                      <IconButton
+                        color="inherit"
+                        className={classes.close}
+                        onClick={() => this.setState({ logoutMsgOpen: false })}
+                      >
+                        <CloseIcon />
+                      </IconButton>,
+                    ]}
+                  />
                 </Grid>
               </Grid>
             </div>
@@ -837,8 +865,8 @@ class DocsDrawer extends React.Component {
   }
 }
 
-DocsDrawer.propTypes = {
+App.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles, { withTheme: true })(DocsDrawer);
+export default withStyles(styles, { withTheme: true })(App);
