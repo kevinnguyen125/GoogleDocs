@@ -7,7 +7,7 @@ import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListIte
          Grid, Paper, Tooltip, Snackbar, CircularProgress } from '@material-ui/core/';
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Menu as MenuIcon, Description as DescriptionIcon,
          Cancel as CancelIcon, AccountBox as AccountBoxIcon, Save as SaveIcon, NoteAdd as NoteAddIcon, Delete as DeleteIcon,
-         Close as CloseIcon, GroupAdd as GroupAddIcon, AddCircle as AddCircleIcon } from '@material-ui/icons/';
+         Close as CloseIcon, GroupAdd as GroupAddIcon, AddCircle as AddCircleIcon, CheckCircleOutline as CheckCircleOutlineIcon } from '@material-ui/icons/';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 import createStyles from 'draft-js-custom-styles';
 import FormatToolbar from './Components/FormatToolbar';
@@ -254,6 +254,8 @@ class App extends React.Component {
       loginOpen: false,
       signupOpen: false,
       docInfoOpen: false,
+      shareInfoOpen: false,
+      addSharedDocOpen: false,
       invalidLogin: false,
       isLoggedIn: false,
       notifyMsgOpen: false,
@@ -528,7 +530,7 @@ class App extends React.Component {
           variant="contained"
           color="primary"
           onClick={() => this.setState({ loginOpen: true })}
-          style={{ margin: '-3px 10px 5px 10px', backgroundColor: '#00c853' }}
+          style={{ margin: '-3px 10px 7px 10px', backgroundColor: '#00c853' }}
         >
           Add Shared Document &nbsp;<AddCircleIcon /></Button>
         <List subheader={<div><ListSubheader style={{ fontSize: 16, borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)', borderTop: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
@@ -663,11 +665,61 @@ class App extends React.Component {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => this.setState({ docInfoOpen: false })} color="primary">
-            Done <ChevronRightIcon />
+            Done <CheckCircleOutlineIcon />
           </Button>
         </DialogActions>
       </Dialog>
     );
+
+    const shareInfoDialog = (
+      <Dialog
+        TransitionComponent={TransitionUp}
+        open={this.state.shareInfoOpen}
+      >
+        <DialogTitle>Share Document Information</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Share the document id and password with others to let them add the document as a collaborator.
+            Click fields to copy to clipboard.
+          </DialogContentText>
+          <TextField
+            disabled
+            fullWidth
+            margin="normal"
+            label="Document Share Id:"
+            value={this.state.documentId ? this.state.documentId : 'none'}
+            onClick={() => {
+              document.addEventListener('copy', (e) => {
+                e.clipboardData.setData('text/plain', this.state.documentId);
+                e.preventDefault();
+              });
+              document.execCommand('copy');
+            }}
+          />
+          <TextField
+            disabled
+            fullWidth
+            margin="normal"
+            label="Document Password:"
+            value={this.state.documentPassword ? this.state.documentPassword : 'none'}
+            onClick={() => {
+              document.addEventListener('copy', (e) => {
+                e.clipboardData.setData('text/plain', this.state.documentPassword);
+                e.preventDefault();
+              });
+              document.execCommand('copy');
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => this.setState({ shareInfoOpen: false })} color="primary">
+            Done <CheckCircleOutlineIcon />
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
+
+    const addSharedDoc = null;
 
     const clickHandlers = {
       bold: this.onBoldClick,
@@ -709,6 +761,7 @@ class App extends React.Component {
           {loginDialog}
           {signupDialog}
           {docInfoDialog}
+          {shareInfoDialog}
           <main
             className={classNames(classes.content, classes['content-left'], {
               [classes.contentShift]: drawerOpen,

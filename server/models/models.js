@@ -48,7 +48,7 @@ const documentSchema = new mongoose.Schema({
   content: {
     required: true,
     type: String,
-  }
+  },
 });
 
 const documentHistorySchema = new mongoose.Schema({
@@ -66,7 +66,7 @@ const documentHistorySchema = new mongoose.Schema({
       required: true,
       type: String,
     },
-    dateCreated: {
+    dateSaved: {
       required: true,
       type: Date,
     },
