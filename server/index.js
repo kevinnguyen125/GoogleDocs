@@ -19,9 +19,12 @@ import routes from './routes/routes.js';
 import serverSocket from './serverSocket';
 
 // Initializing Server and Sockets
+// process.nextTick = setImmediate;
 const app = express();
 const server = http.Server(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, {
+  pingTimeout: 1000 * 60 * 30,
+});
 
 const port = process.env.PORT || 8080;
 server.listen(port);

@@ -29,7 +29,10 @@ const clientSocket = (app) => {
     socket.emit('clientSendingDoc', JSON.stringify(convertToRaw(currentES.getCurrentContent())));
   };
 
-  // Client Opening a Document ID -> Server
+  // Client Requests Server to Join Document ID Room
+  socket.connectToDocument = (docId) => {
+    socket.emit('clientConnectingToDocument', docId);
+  };
 
   // Client Receives Document State from Server & Updates Editor
   socket.on('serverSendingDoc', (documentContentState) => {

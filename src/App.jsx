@@ -356,7 +356,7 @@ class App extends React.Component {
     }
     getData('http://192.168.7.132:8080/getDocuments')
       .then((docs) => {
-        setTimeout(() => this.setState({ documents: docs, documentsLoading: false }), this.state.documentsLoading ? 3000 : 0);
+        setTimeout(() => this.setState({ documents: docs, documentsLoading: false }), this.state.documentsLoading ? 2000 : 0);
       })
       .catch(err => console.log(err));
   }
@@ -370,6 +370,7 @@ class App extends React.Component {
           documentPassword: password,
           editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(content))),
         });
+        this.socket.connectToDocument(_id);
       })
       .catch(err => console.log(err));
   }
@@ -383,7 +384,7 @@ class App extends React.Component {
         content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
         collaborators: [],
       })
-      .then((data) => { console.log(data); this.setState({ documentId: data._id, notifyMsgOpen: true, notifyMsg: 'Successfully saved document!' }, this.loadDocList); })
+      .then((data) => { console.log(data); this.setState({ documentId: data._id, notifyMsgOpen: true, notifyMsg: 'Successfully saved document!' }, this.loadDocList()); })
       .catch(error => console.error(error));
     } else {
       patchData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`, {
