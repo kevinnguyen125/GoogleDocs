@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import { EditorState, convertFromRaw } from 'draft-js';
+import { EditorState, convertFromRaw, convertToRaw } from 'draft-js';
 
 // 'app' is the 'this' from App Component
 const clientSocket = (app) => {
@@ -11,8 +11,18 @@ const clientSocket = (app) => {
     console.log('Successfully connected to server socket!');
   });
 
+  // Client Receives General Message from Server
+  socket.on('serverMessage', (msg) => {
+    console.log(msg);
+  });
+
   // Client Receives Error from Server
   socket.on('errorMessage', err => console.log('SERVER SENT ERROR:', err));
+
+  // Client Sending Document State to Server & Updates Editor
+  socket.sendContentState = (currentES) => {
+    socket.emit('clientSendingDoc', JSON.stringify(convertToRaw(currentES.getCurrentContent())));
+  };
 
   // Client Receives Document State from Server & Updates Editor
   socket.on('serverSendingDoc', (documentContentState) => {

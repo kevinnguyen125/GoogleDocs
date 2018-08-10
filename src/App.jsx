@@ -267,6 +267,8 @@ class App extends React.Component {
       signupUsername: '',
       signupPassword: '',
       signupPasswordRepeat: '',
+      addSharedDocId: '',
+      addSharedDocPassword: '',
       loggedInAs: '',
       currUserId: '',
       documentTitle: 'Untitled (Not Saved)',
@@ -281,7 +283,7 @@ class App extends React.Component {
 
     this.socket = clientSocket(this); // Binding this for Socket Handlers to Modify this.state.editorState
     this.updateEditorState = (currentES) => {
-      this.socket.emit('clientSendingDoc', JSON.stringify(convertToRaw(currentES.getCurrentContent()))); // Send to Collaborators
+      this.socket.sendContentState(currentES);
       this.setState({ editorState: currentES });
     };
     this.getEditorState = () => this.state.editorState;
@@ -299,7 +301,7 @@ class App extends React.Component {
   };
 
   handleLoginSubmit = () => {
-    postData('http://172.16.1.178:8080/login', {
+    postData('http://192.168.7.132:8080/login', {
       username: this.state.loginUsername,
       password: this.state.loginPassword,
     })
@@ -319,7 +321,7 @@ class App extends React.Component {
   };
 
   handleSignupSubmit = () => {
-    postData('http://172.16.1.178:8080/signup', {
+    postData('http://192.168.7.132:8080/signup', {
       username: this.state.signupUsername,
       password: this.state.signupPassword,
       passwordRepeat: this.state.signupPasswordRepeat,
@@ -329,7 +331,7 @@ class App extends React.Component {
   }
 
   handleLogoutSubmit = () => {
-    getData('http://172.16.1.178:8080/logout')
+    getData('http://192.168.7.132:8080/logout')
     .then(() => {
       this.setState({
         loggedInAs: false,
@@ -351,7 +353,7 @@ class App extends React.Component {
     if (!this.state.initialDocsLoad) {
       this.setState({ documentsLoading: true, initialDocsLoad: true });
     }
-    getData('http://172.16.1.178:8080/getDocuments')
+    getData('http://192.168.7.132:8080/getDocuments')
       .then((docs) => {
         setTimeout(() => this.setState({ documents: docs, documentsLoading: false }), this.state.documentsLoading ? 3000 : 0);
       })
@@ -360,7 +362,7 @@ class App extends React.Component {
 
   handleLoadDoc = (id) => {
     console.log('ID:', id);
-    getData(`http://172.16.1.178:8080/api/v1/Document/${id}`)
+    getData(`http://192.168.7.132:8080/api/v1/Document/${id}`)
       .then(({ content, title, password, _id }) => {
         this.setState({
           documentId: _id,
@@ -374,7 +376,7 @@ class App extends React.Component {
 
   handleSaveDoc = () => {
     if (!this.state.documentId) {
-      postData('http://172.16.1.178:8080/api/v1/Document', {
+      postData('http://192.168.7.132:8080/api/v1/Document', {
         owner: this.state.currUserId,
         title: this.state.documentTitle,
         password: this.state.documentPassword,
@@ -384,7 +386,7 @@ class App extends React.Component {
       .then((data) => { console.log(data); this.setState({ documentId: data._id }, this.loadDocList); })
       .catch(error => console.error(error));
     } else {
-      patchData(`http://172.16.1.178:8080/api/v1/Document/${this.state.documentId}`, {
+      patchData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`, {
         title: this.state.documentTitle,
         password: this.state.documentPassword,
         content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
@@ -407,7 +409,7 @@ class App extends React.Component {
 
   handleDeleteDoc = () => {
     if (this.state.documentId) {
-      deleteData(`http://172.16.1.178:8080/api/v1/Document/${this.state.documentId}`)
+      deleteData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`)
         .then((data) => {
           console.log(data);
           this.setState({
@@ -422,6 +424,10 @@ class App extends React.Component {
         })
         .catch(err => console.log(err));
     }
+  }
+
+  handleAddSharedDocSubmit = () => {
+    // add soon
   }
 
   onBoldClick = (e) => {
@@ -529,7 +535,7 @@ class App extends React.Component {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => this.setState({ loginOpen: true })}
+          onClick={() => this.setState({ addSharedDocOpen: true })}
           style={{ margin: '-3px 10px 7px 10px', backgroundColor: '#00c853' }}
         >
           Add Shared Document &nbsp;<AddCircleIcon /></Button>
@@ -719,7 +725,44 @@ class App extends React.Component {
       </Dialog>
     );
 
-    const addSharedDoc = null;
+    const addSharedDoc = (
+      <Dialog
+        TransitionComponent={TransitionRight}
+        open={this.state.addSharedDocOpen}
+        onClose={() => this.setState({ addSharedDocOpen: false, addSharedDocId: '', addSharedDocPassword: '' })}
+      >
+        <DialogTitle>Add a Shared Document</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Enter the shared document ID and password.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            fullWidth
+            margin="normal"
+            label="Document Id"
+            value={this.state.addSharedDocId}
+            onChange={e => this.setState({ addSharedDocId: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Document Password"
+            value={this.state.addSharedDocPassword}
+            type="password"
+            onChange={e => this.setState({ addSharedDocPassword: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => this.setState({ addSharedDocOpen: false, addSharedDocId: '', addSharedDocPassword: '' })} color="secondary">
+            Cancel <CancelIcon />
+          </Button>
+          <Button onClick={this.handleAddSharedDocSubmit} color="primary">
+            Add <AddCircleIcon />
+          </Button>
+        </DialogActions>
+      </Dialog>
+    );
 
     const clickHandlers = {
       bold: this.onBoldClick,
@@ -762,6 +805,7 @@ class App extends React.Component {
           {signupDialog}
           {docInfoDialog}
           {shareInfoDialog}
+          {addSharedDoc}
           <main
             className={classNames(classes.content, classes['content-left'], {
               [classes.contentShift]: drawerOpen,
