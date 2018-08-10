@@ -308,7 +308,7 @@ class App extends React.Component {
     .then((data) => {
       if (data !== 401) {
         this.setState({ loggedInAs: this.state.loginUsername, currUserId: data.id, notifyMsgOpen: true, notifyMsg: 'Successfully Logged In!' },
-          () => { this.handleLoginClose(); this.loadDocList(); });
+          () => { this.handleLoginClose(); this.loadDocList(); this.loadSharedDocsList(); this.socket.sendUsername(this.state.loggedInAs); });
       } else {
         this.setState({ invalidLogin: true });
       }
@@ -325,6 +325,7 @@ class App extends React.Component {
       username: this.state.signupUsername,
       password: this.state.signupPassword,
       passwordRepeat: this.state.signupPasswordRepeat,
+      sharedDocuments: [],
     })
     .then((data) => { console.log(data); this.handleSignupClose(); this.setState({ notifyMsgOpen: true, notifyMsg: 'Succesfully signed up!' }); })
     .catch(error => console.error(error));
@@ -361,7 +362,6 @@ class App extends React.Component {
   }
 
   handleLoadDoc = (id) => {
-    console.log('ID:', id);
     getData(`http://192.168.7.132:8080/api/v1/Document/${id}`)
       .then(({ content, title, password, _id }) => {
         this.setState({
@@ -383,7 +383,7 @@ class App extends React.Component {
         content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
         collaborators: [],
       })
-      .then((data) => { console.log(data); this.setState({ documentId: data._id }, this.loadDocList); })
+      .then((data) => { console.log(data); this.setState({ documentId: data._id, notifyMsgOpen: true, notifyMsg: 'Successfully saved document!' }, this.loadDocList); })
       .catch(error => console.error(error));
     } else {
       patchData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`, {
@@ -391,7 +391,7 @@ class App extends React.Component {
         password: this.state.documentPassword,
         content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
       })
-      .then(data => console.log(data))
+      .then((data) => { console.log(data); this.setState({ notifyMsgOpen: true, notifyMsg: 'Successfully saved document!' }); })
       .catch(error => console.error(error));
     }
   }
@@ -427,7 +427,21 @@ class App extends React.Component {
   }
 
   handleAddSharedDocSubmit = () => {
-    // add soon
+    // Make fancy in future
+    postData(`http://192.168.7.132:8080/addSharedDoc/${this.state.addSharedDocId}`, {
+      docPassword: this.state.addSharedDocPassword,
+    })
+    .then((data) => { console.log(data); this.setState({ addSharedDocOpen: false, addSharedDocId: '', addSharedDocPassword: '' }); this.loadSharedDocsList(); })
+    .catch(error => console.error(error));
+  }
+
+  loadSharedDocsList = () => {
+    // Make fancy in future
+    getData('http://192.168.7.132:8080/sharedDocuments')
+      .then((resp) => {
+        this.setState({ sharedDocuments: resp.sharedDocuments });
+      })
+      .catch(err => console.log(err));
   }
 
   onBoldClick = (e) => {
@@ -543,12 +557,16 @@ class App extends React.Component {
           Documents Shared to You ({this.state.sharedDocuments.length})</ListSubheader></div>}
         >
           <div style={{ maxHeight: 310, overflow: 'auto', borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
-            <ListItem>
-              <ListItemIcon>
-                <DescriptionIcon />
-              </ListItemIcon>
-              <ListItemText primary="Work in Progress" />
-            </ListItem>
+            {this.state.sharedDocuments.map((sharedDoc) => {
+              return (
+                <ListItem key={sharedDoc._id} button onClick={() => this.handleLoadDoc(sharedDoc._id)}> {/* Perfect this later so they can't edit password? */}
+                  <ListItemIcon>
+                    <DescriptionIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={sharedDoc.title} />
+                </ListItem>
+              );
+            })}
           </div>
         </List>
       </Drawer>

@@ -19,10 +19,17 @@ const clientSocket = (app) => {
   // Client Receives Error from Server
   socket.on('errorMessage', err => console.log('SERVER SENT ERROR:', err));
 
+  // Client Sending Login Username to Server upon Successful Login
+  socket.sendUsername = (username) => {
+    socket.emit('clientSendingUsername', username);
+  };
+
   // Client Sending Document State to Server & Updates Editor
   socket.sendContentState = (currentES) => {
     socket.emit('clientSendingDoc', JSON.stringify(convertToRaw(currentES.getCurrentContent())));
   };
+
+  // Client Opening a Document ID -> Server
 
   // Client Receives Document State from Server & Updates Editor
   socket.on('serverSendingDoc', (documentContentState) => {

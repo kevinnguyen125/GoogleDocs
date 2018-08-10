@@ -21,11 +21,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     type: String,
   },
-  sharedDocuments: {
+  sharedDocuments: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Document',
-    default: [],
-  },
+  }],
 });
 
 const documentSchema = new mongoose.Schema({
@@ -41,7 +40,6 @@ const documentSchema = new mongoose.Schema({
   collaborators: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: [],
   }],
   title: {
     required: true,

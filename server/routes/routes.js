@@ -9,7 +9,7 @@ mongoose.connect(process.env.MONGODB_URI);
 
 // Makes sure that user is logged in
 router.use('/', (req, res, next) => {
-  if(req.user) {
+  if (req.user) {
     next();
   } else {
     res.status(404).send();
@@ -31,19 +31,23 @@ router.get('/sharedDocuments', (req, res) => {
 });
 
 // POST route for user to add a document to their list of shared documents
-// router.post('/addSharedDoc/:docId', (req, res) => {
-//   Document.findById(req.params.docId)
-//   .exec()
-//   .then((doc) => {
-//     if (req.body.docPassword === doc.password) {
-//       req.user.sharedDocuments.push(req.params.docId);
-//       return req.user.save();
-//     }
-//     res.status(404).send();
-//   })
-//   .then
-//   .catch(err => res.status(500).send(err));
-// });
+router.post('/addSharedDoc/:docId', (req, res) => {
+  Document.findById(req.params.docId)
+  .exec()
+  .then((doc) => {
+    if (req.body.docPassword === doc.password) {
+      doc.collaborators.push(req.user._id);
+      return doc.save();
+    }
+    res.status(404).send('Document password does not match.');
+  })
+  .then(() => {
+    req.user.sharedDocuments.push(req.params.docId);
+    return req.user.save();
+  })
+  .then(() => res.json({ success: true }))
+  .catch(err => res.json({ success: false, error: err }));
+});
 
 restify.serve(router, Document);
 
