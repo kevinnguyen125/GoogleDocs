@@ -1,4 +1,4 @@
-// Server
+// Server Middleware
 import http from 'http';
 import express from 'express';
 import logger from 'morgan';
@@ -13,13 +13,22 @@ import mongoose from 'mongoose';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { User } from './models/models.js';
 
+// Routes and Sockets
 import auth from './routes/auth';
 import routes from './routes/routes.js';
+import serverSocket from './serverSocket';
 
+// Initializing Server and Sockets
 const app = express();
 const server = http.Server(app);
+const io = require('socket.io')(server);
 
-// Middleware
+const port = process.env.PORT || 8080;
+server.listen(port);
+console.log(`Server running at http://127.0.0.1:${port}/`);
+serverSocket(io);
+
+// Initializing Middleware
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -76,7 +85,3 @@ app.use(passport.session());
 
 app.use('/', auth(passport));
 app.use('/', routes);
-
-const port = process.env.PORT || 8080;
-server.listen(port);
-console.log(`Server running at http://127.0.0.1:${port}/`);

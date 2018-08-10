@@ -7,11 +7,12 @@ import { Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListIte
          Grid, Paper, Tooltip, Snackbar, CircularProgress } from '@material-ui/core/';
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, Menu as MenuIcon, Description as DescriptionIcon,
          Cancel as CancelIcon, AccountBox as AccountBoxIcon, Save as SaveIcon, NoteAdd as NoteAddIcon, Delete as DeleteIcon,
-         Close as CloseIcon } from '@material-ui/icons/';
+         Close as CloseIcon, GroupAdd as GroupAddIcon, AddCircle as AddCircleIcon } from '@material-ui/icons/';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 import createStyles from 'draft-js-custom-styles';
 import FormatToolbar from './Components/FormatToolbar';
 import { colorPickerPlugin } from './Components/ColorPicker';
+import clientSocket from './clientSocket';
 
 function DocsLogo() {
   return (
@@ -275,19 +276,20 @@ class App extends React.Component {
       documents: [],
       sharedDocuments: [],
     };
-    this.setDomEditorRef = (ref) => {
-      this.domEditor = ref;
+
+    this.socket = clientSocket(this); // Binding this for Socket Handlers to Modify this.state.editorState
+    this.updateEditorState = (currentES) => {
+      this.socket.emit('clientSendingDoc', JSON.stringify(convertToRaw(currentES.getCurrentContent()))); // Send to Collaborators
+      this.setState({ editorState: currentES });
     };
-    this.updateEditorState = editorState => this.setState({ editorState });
     this.getEditorState = () => this.state.editorState;
     this.picker = colorPickerPlugin(this.updateEditorState, this.getEditorState);
     this.joinedCustomStyleFn = (x) => {
       return editorCustomStyleFn(x) || this.picker.customStyleFn(x);
     };
-  }
-
-  componentDidUpdate() {
-    console.count('DID UPDATE');
+    this.setDomEditorRef = (ref) => {
+      this.domEditor = ref;
+    };
   }
 
   handleLoginClose = () => {
@@ -494,16 +496,16 @@ class App extends React.Component {
         <Divider />
         {this.state.loggedInAs ? null :
         <Button variant="contained" color="primary" onClick={() => this.setState({ loginOpen: true })} style={{ margin: '5px 10px 5px 10px', backgroundColor: '#00c853' }}>
-          Login <ChevronRightIcon /></Button>}
+          Login &nbsp;<ChevronRightIcon /></Button>}
         {this.state.loggedInAs ? null : <Divider />}
         {this.state.loggedInAs ? null :
         <Button variant="contained" color="secondary" onClick={() => this.setState({ signupOpen: true })} style={{ margin: '5px 10px 5px 10px' }}>
-          Sign Up <AccountBoxIcon /></Button>}
+          Sign Up &nbsp;<AccountBoxIcon /></Button>}
         {this.state.loggedInAs ?
           <Button variant="contained" color="secondary" onClick={this.handleLogoutSubmit} style={{ margin: '5px 10px 5px 10px' }}>
-            Logout <AccountBoxIcon /></Button> : null}
+            Logout &nbsp;<AccountBoxIcon /></Button> : null}
         <Divider />
-        <List subheader={<div><ListSubheader style={{ fontSize: 16, color: 'black', borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
+        <List subheader={<div><ListSubheader style={{ fontSize: 16, color: 'black', borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)', paddingBottom: 0 }}>
           {this.state.loggedInAs ? `Logged In As: ${this.state.loggedInAs}` : 'Not Logged In.'}</ListSubheader>
           <ListSubheader style={{ fontSize: 16 }}>Your Documents ({this.state.documents.length})</ListSubheader><Divider /></div>}
         >
@@ -522,7 +524,14 @@ class App extends React.Component {
             })}
           </div>
         </List>
-        <List subheader={<div><ListSubheader style={{ fontSize: 16, borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => this.setState({ loginOpen: true })}
+          style={{ margin: '-3px 10px 5px 10px', backgroundColor: '#00c853' }}
+        >
+          Add Shared Document &nbsp;<AddCircleIcon /></Button>
+        <List subheader={<div><ListSubheader style={{ fontSize: 16, borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)', borderTop: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
           Documents Shared to You ({this.state.sharedDocuments.length})</ListSubheader></div>}
         >
           <div style={{ maxHeight: 310, overflow: 'auto', borderBottom: 'solid 1px rgba(0, 0, 0, 0.12)' }}>
@@ -761,6 +770,14 @@ class App extends React.Component {
                     onClick={() => this.setState({ docInfoOpen: true })}
                     className={classes.setDocInfoButton}
                   >Set Document Information
+                  </Button>
+                  <Button
+                    variant="raised"
+                    color="primary"
+                    onClick={() => this.setState({ shareInfoOpen: true })}
+                    className={classes.setDocInfoButton}
+                    style={{ backgroundColor: '#00c853' }}
+                  >Share&nbsp;<GroupAddIcon />
                   </Button>
                   <Snackbar
                     anchorOrigin={{

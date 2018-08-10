@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     type: String,
   },
+  sharedDocuments: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Document',
+  },
 });
 
 const documentSchema = new mongoose.Schema({
@@ -41,11 +45,37 @@ const documentSchema = new mongoose.Schema({
     required: true,
     type: String,
   },
-  content: String,
+  content: {
+    required: true,
+    type: String,
+  }
+});
+
+const documentHistorySchema = new mongoose.Schema({
+  docId: {
+    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Document',
+  },
+  history: [{
+    title: {
+      required: true,
+      type: String,
+    },
+    content: {
+      required: true,
+      type: String,
+    },
+    dateCreated: {
+      required: true,
+      type: Date,
+    },
+  }],
 });
 
 // Models
 const User = mongoose.model('User', userSchema);
 const Document = mongoose.model('Document', documentSchema);
+const DocumentHistory = mongoose.model('DocumentHistory', documentHistorySchema);
 
-export { User, Document };
+export { User, Document, DocumentHistory };
