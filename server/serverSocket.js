@@ -29,7 +29,6 @@ const serverSocket = (io) => {
 
     // Server Receives Document State in JSON from Client, Broadcasts to Everyone Else
     socket.on('clientSendingDoc', async (documentContentState) => {
-      console.log('RECEIVED', socket.currentDocRoomId);
       io.currentDocRooms[socket.currentDocRoomId] = documentContentState;
       socket.to(socket.currentDocRoomId).emit('serverSendingDoc', documentContentState);
     });
