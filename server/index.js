@@ -76,6 +76,14 @@ passport.deserializeUser((id, done) => {
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 
+mongoose.connection.on('connected', () => {
+  console.log('Connected to MongoDB!');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.log('Failed to connect to MongoDB.', err);
+});
+
 mongoose.connect(process.env.MONGODB_URI);
 
 app.use(session({

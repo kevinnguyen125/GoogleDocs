@@ -301,7 +301,7 @@ class App extends React.Component {
   };
 
   handleLoginSubmit = () => {
-    postData('http://192.168.7.132:8080/login', {
+    postData('http://localhost:8080/login', {
       username: this.state.loginUsername,
       password: this.state.loginPassword,
     })
@@ -321,7 +321,7 @@ class App extends React.Component {
   };
 
   handleSignupSubmit = () => {
-    postData('http://192.168.7.132:8080/signup', {
+    postData('http://localhost:8080/signup', {
       username: this.state.signupUsername,
       password: this.state.signupPassword,
       passwordRepeat: this.state.signupPasswordRepeat,
@@ -332,7 +332,7 @@ class App extends React.Component {
   }
 
   handleLogoutSubmit = () => {
-    getData('http://192.168.7.132:8080/logout')
+    getData('http://localhost:8080/logout')
     .then(() => {
       this.setState({
         loggedInAs: false,
@@ -354,7 +354,7 @@ class App extends React.Component {
     if (!this.state.initialDocsLoad) {
       this.setState({ documentsLoading: true, initialDocsLoad: true });
     }
-    getData('http://192.168.7.132:8080/getDocuments')
+    getData('http://localhost:8080/getDocuments')
       .then((docs) => {
         setTimeout(() => this.setState({ documents: docs, documentsLoading: false }), this.state.documentsLoading ? 2000 : 0);
       })
@@ -362,7 +362,7 @@ class App extends React.Component {
   }
 
   handleLoadDoc = (id) => {
-    getData(`http://192.168.7.132:8080/api/v1/Document/${id}`)
+    getData(`http://localhost:8080/api/v1/Document/${id}`)
       .then(({ content, title, password, _id }) => {
         this.setState({
           documentId: _id,
@@ -377,7 +377,7 @@ class App extends React.Component {
 
   handleSaveDoc = () => {
     if (!this.state.documentId) {
-      postData('http://192.168.7.132:8080/api/v1/Document', {
+      postData('http://localhost:8080/api/v1/Document', {
         owner: this.state.currUserId,
         title: this.state.documentTitle,
         password: this.state.documentPassword,
@@ -387,7 +387,7 @@ class App extends React.Component {
       .then((data) => { console.log(data); this.setState({ documentId: data._id, notifyMsgOpen: true, notifyMsg: 'Successfully saved document!' }, this.loadDocList()); })
       .catch(error => console.error(error));
     } else {
-      patchData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`, {
+      patchData(`http://localhost:8080/api/v1/Document/${this.state.documentId}`, {
         title: this.state.documentTitle,
         password: this.state.documentPassword,
         content: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent())),
@@ -410,7 +410,7 @@ class App extends React.Component {
 
   handleDeleteDoc = () => {
     if (this.state.documentId) {
-      deleteData(`http://192.168.7.132:8080/api/v1/Document/${this.state.documentId}`)
+      deleteData(`http://localhost:8080/api/v1/Document/${this.state.documentId}`)
         .then((data) => {
           console.log(data);
           this.setState({
@@ -429,7 +429,7 @@ class App extends React.Component {
 
   handleAddSharedDocSubmit = () => {
     // Make fancy in future
-    postData(`http://192.168.7.132:8080/addSharedDoc/${this.state.addSharedDocId}`, {
+    postData(`http://localhost:8080/addSharedDoc/${this.state.addSharedDocId}`, {
       docPassword: this.state.addSharedDocPassword,
     })
     .then((data) => { console.log(data); this.setState({ addSharedDocOpen: false, addSharedDocId: '', addSharedDocPassword: '' }); this.loadSharedDocsList(); })
@@ -438,7 +438,7 @@ class App extends React.Component {
 
   loadSharedDocsList = () => {
     // Make fancy in future
-    getData('http://192.168.7.132:8080/sharedDocuments')
+    getData('http://localhost:8080/sharedDocuments')
       .then((resp) => {
         this.setState({ sharedDocuments: resp.sharedDocuments });
       })

@@ -1,11 +1,8 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import restify from 'express-restify-mongoose';
 import { User, Document } from '../models/models.js';
 
 const router = express.Router();
-
-mongoose.connect(process.env.MONGODB_URI);
 
 // Makes sure that user is logged in
 router.use('/', (req, res, next) => {

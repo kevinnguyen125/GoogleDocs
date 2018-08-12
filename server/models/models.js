@@ -1,16 +1,5 @@
 import mongoose from 'mongoose';
 
-mongoose.connection.on('connected', () => {
-  console.log('Connected to MongoDB!');
-});
-
-mongoose.connection.on('error', () => {
-  console.log('Failed to connect to MongoDB.');
-});
-
-const connect = process.env.MONGODB_URI;
-mongoose.connect(connect);
-
 // Schemas
 const userSchema = new mongoose.Schema({
   username: {

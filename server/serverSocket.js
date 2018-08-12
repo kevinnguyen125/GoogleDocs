@@ -17,8 +17,8 @@ const serverSocket = (io) => {
     });
 
     // Server Receives Client Request to Join Document ID Room
-    socket.on('clientConnectingToDocument', (docId) => {
-      socket.join(docId);
+    socket.on('clientConnectingToDocument', async (docId) => {
+      await socket.join(docId);
       socket.currentDocRoomId = docId;
       io.in(docId).emit('serverMessage', `${socket.username} has joined room ${docId}!`);
       if (io.currentDocRooms[docId]) {
@@ -28,9 +28,10 @@ const serverSocket = (io) => {
     });
 
     // Server Receives Document State in JSON from Client, Broadcasts to Everyone Else
-    socket.on('clientSendingDoc', (documentContentState) => {
+    socket.on('clientSendingDoc', async (documentContentState) => {
+      console.log('RECEIVED', socket.currentDocRoomId);
       io.currentDocRooms[socket.currentDocRoomId] = documentContentState;
-      socket.to(socket.currentDocRoom).emit('serverSendingDoc', documentContentState);
+      socket.to(socket.currentDocRoomId).emit('serverSendingDoc', documentContentState);
     });
   });
 };

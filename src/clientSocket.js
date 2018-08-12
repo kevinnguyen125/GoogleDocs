@@ -26,6 +26,7 @@ const clientSocket = (app) => {
 
   // Client Sending Document State to Server & Updates Editor
   socket.sendContentState = (currentES) => {
+    console.log('SendingDoc');
     socket.emit('clientSendingDoc', JSON.stringify(convertToRaw(currentES.getCurrentContent())));
   };
 
@@ -36,6 +37,7 @@ const clientSocket = (app) => {
 
   // Client Receives Document State from Server & Updates Editor
   socket.on('serverSendingDoc', (documentContentState) => {
+    console.log('GettingDoc');
     app.setState({ editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(documentContentState))) });
   });
 
